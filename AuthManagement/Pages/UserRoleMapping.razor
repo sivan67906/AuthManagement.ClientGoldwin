@@ -1,0 +1,1065 @@
+@page "/userrolemapping"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@using AuthManagement.Shared
+@inject RBACService RBACService
+@inject PermissionService PermissionService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<UserRoleMapping> Logger
+@inject ISnackbar Snackbar
+@attribute [Authorize]
+
+<PageTitle>User Role Mapping</PageTitle>
+
+<style>
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 0;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #666;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .breadcrumb-separator {
+        color: #999;
+    }
+
+    .breadcrumb-link {
+        color: #7c3aed;
+        text-decoration: none;
+    }
+
+    .breadcrumb-link:hover {
+        text-decoration: underline;
+    }
+
+    .breadcrumb-current {
+        color: #666;
+    }
+
+    /* Container */
+    .mapping-container {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    /* Toolbar */
+    .toolbar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        background: white;
+        border-bottom: 1px solid #f0f0f0;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .toolbar-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .mappings-list-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-left: auto;
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 280px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        border: 1px solid #d9d9e3;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 18px;
+    }
+
+    .add-button {
+        background-color: #7c3aed;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background-color 0.2s;
+        white-space: nowrap;
+    }
+
+    .add-button:hover {
+        background-color: #6d28d9;
+    }
+
+    .add-button i {
+        font-size: 18px;
+    }
+
+    /* Table */
+    .mapping-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .mapping-table thead {
+        background-color: #fafafa;
+    }
+
+    .mapping-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        user-select: none;
+        color: black;
+        background: white;
+    }
+
+    .mapping-table th:last-child {
+        border-right: none;
+    }
+
+    .mapping-table th.sortable {
+        position: relative;
+        padding-right: 30px;
+    }
+
+    .sort-indicator {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .sort-arrow {
+        width: 0;
+        height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+    }
+
+    .sort-arrow.up {
+        border-bottom: 5px solid #ccc;
+    }
+
+    .sort-arrow.up.active {
+        border-bottom-color: #7c3aed;
+    }
+
+    .sort-arrow.down {
+        border-top: 5px solid #ccc;
+    }
+
+    .sort-arrow.down.active {
+        border-top-color: #7c3aed;
+    }
+
+    .mapping-table th.text-center {
+        text-align: center;
+    }
+
+    .mapping-table tbody tr {
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .mapping-table td {
+        padding: 10px 16px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .mapping-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .serial-number {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .user-email {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .role-name {
+        color: #333;
+        font-weight: 500;
+    }
+
+    /* Badges */
+    .department-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        background-color: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .no-department-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        background-color: #f5f5f5;
+        color: #666;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: #f5f5f5;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        color: #666;
+        font-size: 18px;
+    }
+
+    .action-btn i {
+        font-size: 18px;
+        display: block;
+        line-height: 1;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .action-btn.view-btn {
+        background-color: #e3f2fd;
+        color: #2196f3;
+    }
+
+    .action-btn.view-btn:hover {
+        background-color: #2196f3;
+        color: white;
+    }
+
+    .action-btn.edit-btn {
+        background-color: #fff3e0;
+        color: #ff9800;
+    }
+
+    .action-btn.edit-btn:hover {
+        background-color: #ff9800;
+        color: white;
+    }
+
+    .action-btn.delete-btn {
+        background-color: #ffebee;
+        color: #f44336;
+    }
+
+    .action-btn.delete-btn:hover {
+        background-color: #f44336;
+        color: white;
+    }
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-top: 1px solid #f0f0f0;
+        background: white;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .pagination-info {
+        font-size: 13px;
+        color: #666;
+    }
+
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .page-size-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .page-size-select {
+        padding: 4px 8px;
+        border: 1px solid #d9d9e3;
+        border-radius: 4px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .pagination-buttons {
+        display: flex;
+        gap: 4px;
+    }
+
+    .pagination-btn {
+        padding: 6px 12px;
+        border: 1px solid #d9d9e3;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #666;
+        transition: all 0.2s;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background-color: #f5f5f5;
+        border-color: #7c3aed;
+        color: #7c3aed;
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .pagination-btn.active {
+        background-color: #7c3aed;
+        color: white;
+        border-color: #7c3aed;
+    }
+
+    /* Loading and Error States */
+    .loading-container, .error-container, .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.3em;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: #ccc;
+        margin-bottom: 16px;
+    }
+
+    .empty-state h5 {
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        color: #999;
+        font-size: 14px;
+    }
+</style>
+
+<div class="page-header mb-3">
+    <div>
+        <h4 class="page-title">User Role Mapping</h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/" class="breadcrumb-link">
+                        <i class="ti tabler-home"></i> Home
+                    </a>
+                    <span class="breadcrumb-separator">/</span>
+                </li>
+                <li class="breadcrumb-item breadcrumb-current">User Role Mapping</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="mapping-container">
+    <!-- Toolbar -->
+    <div class="toolbar-container">
+        <div class="toolbar-left">
+            <span class="mappings-list-label">User Role Mappings List</span>
+        </div>
+        <div class="toolbar-right">
+            <div class="search-box">
+                <i class="ti tabler-search search-icon"></i>
+                <input type="text" 
+                       class="search-input" 
+                       placeholder="Search by user email or role name..."
+                       @bind-value="_searchString" 
+                       @bind-value:event="oninput"
+                       @onchange="@(() => OnSearchChanged(_searchString))" />
+            </div>
+            @if (_canCreate)
+            {
+                <button class="add-button" @onclick="OpenAddDialog">
+                    <i class="ti tabler-plus"></i>
+                    <span>Add Mapping</span>
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- Table -->
+    @if (_isLoading)
+    {
+        <div class="loading-container">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 mb-0">Loading user role mappings...</p>
+        </div>
+    }
+    else if (_hasError)
+    {
+        <div class="error-container">
+            <i class="ti tabler-alert-circle" style="font-size: 64px; color: #f44336;"></i>
+            <h5 class="mt-3">Error Loading Data</h5>
+            <p>@_errorMessage</p>
+        </div>
+    }
+    else if (_pagedMappings != null && _pagedMappings.Any())
+    {
+        <table class="mapping-table">
+            <thead>
+                <tr>
+                    <th @onclick="@(() => ToggleSort("no"))" class="sortable">
+                        No.
+                        <span class="sort-indicator">
+                            <span class="sort-arrow up @(_sortColumn == "no" && _sortDirection == "asc" ? "active" : "")"></span>
+                            <span class="sort-arrow down @(_sortColumn == "no" && _sortDirection == "desc" ? "active" : "")"></span>
+                        </span>
+                    </th>
+                    <th @onclick="@(() => ToggleSort("user"))" class="sortable">
+                        User Name (Email)
+                        <span class="sort-indicator">
+                            <span class="sort-arrow up @(_sortColumn == "user" && _sortDirection == "asc" ? "active" : "")"></span>
+                            <span class="sort-arrow down @(_sortColumn == "user" && _sortDirection == "desc" ? "active" : "")"></span>
+                        </span>
+                    </th>
+                    <th @onclick="@(() => ToggleSort("role"))" class="sortable">
+                        Role Name
+                        <span class="sort-indicator">
+                            <span class="sort-arrow up @(_sortColumn == "role" && _sortDirection == "asc" ? "active" : "")"></span>
+                            <span class="sort-arrow down @(_sortColumn == "role" && _sortDirection == "desc" ? "active" : "")"></span>
+                        </span>
+                    </th>
+                    <th @onclick="@(() => ToggleSort("department"))" class="sortable">
+                        Department Name
+                        <span class="sort-indicator">
+                            <span class="sort-arrow up @(_sortColumn == "department" && _sortDirection == "asc" ? "active" : "")"></span>
+                            <span class="sort-arrow down @(_sortColumn == "department" && _sortDirection == "desc" ? "active" : "")"></span>
+                        </span>
+                    </th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var mapping in _pagedMappings)
+                {
+                    <tr>
+                        <td class="serial-number">@GetGlobalSerialNumber(mapping)</td>
+                        <td class="user-email">@mapping.UserEmail</td>
+                        <td class="role-name">@mapping.RoleName</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(mapping.DepartmentName))
+                            {
+                                <span class="department-badge">@mapping.DepartmentName</span>
+                            }
+                            else
+                            {
+                                <span class="no-department-badge">No Department</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                @if (_canView)
+                                {
+                                    <button class="action-btn view-btn" 
+                                            @onclick="@(() => OpenViewDialog(mapping))"
+                                            title="View">
+                                        <i class="ti tabler-eye"></i>
+                                    </button>
+                                }
+                                @if (_canEdit)
+                                {
+                                    <button class="action-btn edit-btn" 
+                                            @onclick="@(() => OpenEditDialog(mapping))"
+                                            title="Edit">
+                                        <i class="ti tabler-pencil"></i>
+                                    </button>
+                                }
+                                @if (_canDelete)
+                                {
+                                    <button class="action-btn delete-btn" 
+                                            @onclick="@(() => DeleteMapping(mapping))"
+                                            title="Delete">
+                                        <i class="ti tabler-trash"></i>
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
+            </div>
+            <div class="pagination-controls">
+                <div class="page-size-container">
+                    <label>Show</label>
+                    <select class="page-size-select" @bind="_pageSize" @bind:after="UpdateFilteredMappings">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <label>entries</label>
+                </div>
+                <div class="pagination-buttons">
+                    <button class="pagination-btn" @onclick="@(() => GoToPage(1))" disabled="@(_currentPage == 1)">
+                        <i class="ti tabler-chevrons-left"></i>
+                    </button>
+                    <button class="pagination-btn" @onclick="@(() => GoToPage(_currentPage - 1))" disabled="@(_currentPage == 1)">
+                        <i class="ti tabler-chevron-left"></i>
+                    </button>
+                    
+                    @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                    {
+                        var pageNumber = i;
+                        <button class="pagination-btn @(_currentPage == pageNumber ? "active" : "")" 
+                                @onclick="@(() => GoToPage(pageNumber))">
+                            @pageNumber
+                        </button>
+                    }
+                    
+                    <button class="pagination-btn" @onclick="@(() => GoToPage(_currentPage + 1))" disabled="@(_currentPage == _totalPages)">
+                        <i class="ti tabler-chevron-right"></i>
+                    </button>
+                    <button class="pagination-btn" @onclick="@(() => GoToPage(_totalPages))" disabled="@(_currentPage == _totalPages)">
+                        <i class="ti tabler-chevrons-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="ti tabler-database-off"></i>
+            <h5>No User Role Mappings Found</h5>
+            <p>There are no user role mappings to display.</p>
+        </div>
+    }
+</div>
+
+<!-- Form Dialog Component -->
+<UserRoleMappingFormDialog IsOpen="_isDialogOpen"
+                           IsEditMode="_isEditMode"
+                           IsSaving="_isSaving"
+                           FormModel="_mappingModel"
+                           Departments="_departments"
+                           Users="_users"
+                           Roles="_filteredRoles"
+                           OnCancel="CloseDialog"
+                           OnSubmit="HandleSubmit"
+                           OnDepartmentChanged="OnDepartmentChanged" />
+
+<!-- Details Offcanvas Component -->
+<UserRoleMappingDetailsOffcanvas IsOpen="_isOffcanvasOpen"
+                                 Mapping="_selectedMapping"
+                                 OnClose="CloseOffcanvas" />
+
+@code {
+    private List<UserRoleMappingDto> _mappings = new();
+    private List<UserRoleMappingDto> _filteredMappings = new();
+    private List<UserRoleMappingDto> _pagedMappings = new();
+    private List<DepartmentDto> _departments = new();
+    private List<UserDto> _users = new();
+    private List<RoleDto> _roles = new();
+    private List<RoleDto> _filteredRoles = new();
+    
+    private UserRoleMappingDto? _selectedMapping;
+    private UserRoleMappingFormDialog.MappingFormModel _mappingModel = new();
+    
+    private bool _isLoading = true;
+    private bool _hasError = false;
+    private string _errorMessage = string.Empty;
+    private bool _isOffcanvasOpen = false;
+    private bool _isDialogOpen = false;
+    private bool _isEditMode = false;
+    private bool _isSaving = false;
+    
+    private bool _canView = false;
+    private bool _canCreate = false;
+    private bool _canEdit = false;
+    private bool _canDelete = false;
+    
+    private string _searchString = string.Empty;
+    private string _sortColumn = "user";
+    private string _sortDirection = "asc";
+    private int _currentPage = 1;
+    private int _pageSize = 10;
+    private int _totalItems = 0;
+    private int _totalPages = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (!authState.User.Identity?.IsAuthenticated ?? true)
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            var permissions = await PermissionService.GetPagePermissionsAsync("/userrolemapping");
+            _canView = permissions.CanView;
+            _canCreate = permissions.CanAdd;
+            _canEdit = permissions.CanEdit;
+            _canDelete = permissions.CanDelete;
+
+            Logger.LogInformation("Permissions set - View: {View}, Add: {Add}, Edit: {Edit}, Delete: {Delete}",
+                _canView, _canCreate, _canEdit, _canDelete);
+
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing UserRoleMapping page");
+            _hasError = true;
+            _errorMessage = $"Error initializing page: {ex.Message}";
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadData()
+    {
+        _isLoading = true;
+        _hasError = false;
+
+        try
+        {
+            var mappingsTask = RBACService.GetAllUserRoleMappingsAsync();
+            var departmentsTask = RBACService.GetAllDepartmentsAsync();
+            var usersTask = RBACService.GetAllUsersAsync();
+            var rolesTask = RBACService.GetAllRolesAsync();
+
+            await Task.WhenAll(mappingsTask, departmentsTask, usersTask, rolesTask);
+
+            var mappingsResponse = await mappingsTask;
+            var departmentsResponse = await departmentsTask;
+            var usersResponse = await usersTask;
+            var rolesResponse = await rolesTask;
+
+            if (mappingsResponse.Success && mappingsResponse.Data != null)
+            {
+                _mappings = mappingsResponse.Data;
+                Logger.LogInformation("Loaded {Count} user role mappings", _mappings.Count);
+            }
+            else
+            {
+                _hasError = true;
+                _errorMessage = mappingsResponse.Message ?? "Failed to load user role mappings";
+            }
+
+            if (departmentsResponse.Success && departmentsResponse.Data != null)
+            {
+                _departments = departmentsResponse.Data;
+            }
+
+            if (usersResponse.Success && usersResponse.Data != null)
+            {
+                _users = usersResponse.Data;
+            }
+
+            if (rolesResponse.Success && rolesResponse.Data != null)
+            {
+                _roles = rolesResponse.Data;
+            }
+
+            UpdateFilteredMappings();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading data");
+            _hasError = true;
+            _errorMessage = $"Error loading data: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void UpdateFilteredMappings()
+    {
+        // Filter
+        if (string.IsNullOrWhiteSpace(_searchString))
+        {
+            _filteredMappings = _mappings.ToList();
+        }
+        else
+        {
+            _filteredMappings = _mappings
+                .Where(m => FilterFunc(m))
+                .ToList();
+        }
+
+        // Sort
+        _filteredMappings = (_sortColumn, _sortDirection) switch
+        {
+            ("no", "asc") => _filteredMappings.OrderBy(m => _mappings.IndexOf(m)).ToList(),
+            ("no", "desc") => _filteredMappings.OrderByDescending(m => _mappings.IndexOf(m)).ToList(),
+            ("user", "asc") => _filteredMappings.OrderBy(m => m.UserEmail).ToList(),
+            ("user", "desc") => _filteredMappings.OrderByDescending(m => m.UserEmail).ToList(),
+            ("role", "asc") => _filteredMappings.OrderBy(m => m.RoleName).ToList(),
+            ("role", "desc") => _filteredMappings.OrderByDescending(m => m.RoleName).ToList(),
+            ("department", "asc") => _filteredMappings.OrderBy(m => m.DepartmentName ?? string.Empty).ToList(),
+            ("department", "desc") => _filteredMappings.OrderByDescending(m => m.DepartmentName ?? string.Empty).ToList(),
+            _ => _filteredMappings.OrderBy(m => m.UserEmail).ToList()
+        };
+
+        _totalItems = _filteredMappings.Count;
+        _totalPages = _totalItems > 0 ? (int)Math.Ceiling((double)_totalItems / _pageSize) : 1;
+
+        if (_currentPage > _totalPages)
+        {
+            _currentPage = _totalPages;
+        }
+        if (_currentPage < 1)
+        {
+            _currentPage = 1;
+        }
+
+        _pagedMappings = _filteredMappings
+            .Skip((_currentPage - 1) * _pageSize)
+            .Take(_pageSize)
+            .ToList();
+    }
+
+    private void OnSearchChanged(string value)
+    {
+        _searchString = value;
+        _currentPage = 1;
+        UpdateFilteredMappings();
+        StateHasChanged();
+    }
+
+    private void ToggleSort(string column)
+    {
+        if (_sortColumn == column)
+        {
+            _sortDirection = _sortDirection == "asc" ? "desc" : "asc";
+        }
+        else
+        {
+            _sortColumn = column;
+            _sortDirection = "asc";
+        }
+        UpdateFilteredMappings();
+        StateHasChanged();
+    }
+
+    private bool FilterFunc(UserRoleMappingDto mapping)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        var searchLower = _searchString.ToLower();
+        return mapping.UserEmail.ToLower().Contains(searchLower) ||
+               mapping.RoleName.ToLower().Contains(searchLower) ||
+               (mapping.DepartmentName?.ToLower().Contains(searchLower) ?? false);
+    }
+
+    private int GetGlobalSerialNumber(UserRoleMappingDto mapping)
+    {
+        var index = _filteredMappings.IndexOf(mapping);
+        return index + 1;
+    }
+
+    private int GetStartRecord()
+    {
+        return _totalItems > 0 ? (_currentPage - 1) * _pageSize + 1 : 0;
+    }
+
+    private int GetEndRecord()
+    {
+        return Math.Min(_currentPage * _pageSize, _totalItems);
+    }
+
+    private int GetStartPage()
+    {
+        return Math.Max(1, _currentPage - 2);
+    }
+
+    private int GetEndPage()
+    {
+        return Math.Min(_totalPages, _currentPage + 2);
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page >= 1 && page <= _totalPages)
+        {
+            _currentPage = page;
+            UpdateFilteredMappings();
+            StateHasChanged();
+        }
+    }
+
+    private void OpenAddDialog()
+    {
+        _selectedMapping = null;
+        _isEditMode = false;
+        _mappingModel = new UserRoleMappingFormDialog.MappingFormModel();
+        _filteredRoles = new List<RoleDto>();
+        _isDialogOpen = true;
+    }
+
+    private void OpenEditDialog(UserRoleMappingDto mapping)
+    {
+        _selectedMapping = mapping;
+        _isEditMode = true;
+        _mappingModel = new UserRoleMappingFormDialog.MappingFormModel
+        {
+            UserId = mapping.UserId.ToString(),
+            RoleId = mapping.RoleId.ToString(),
+            DepartmentId = mapping.DepartmentId?.ToString() ?? ""
+        };
+        
+        // Load filtered roles for the selected department
+        if (!string.IsNullOrEmpty(_mappingModel.DepartmentId))
+        {
+            var departmentId = Guid.Parse(_mappingModel.DepartmentId);
+            _filteredRoles = _roles.Where(r => r.DepartmentId == departmentId).ToList();
+        }
+        
+        _isDialogOpen = true;
+    }
+
+    private void OpenViewDialog(UserRoleMappingDto mapping)
+    {
+        _selectedMapping = mapping;
+        _isOffcanvasOpen = true;
+    }
+
+    private void CloseDialog()
+    {
+        _isDialogOpen = false;
+        _selectedMapping = null;
+        _mappingModel = new UserRoleMappingFormDialog.MappingFormModel();
+        _isEditMode = false;
+        _filteredRoles = new List<RoleDto>();
+    }
+
+    private void CloseOffcanvas()
+    {
+        _isOffcanvasOpen = false;
+        _selectedMapping = null;
+    }
+
+    private void OnDepartmentChanged(string departmentId)
+    {
+        if (!string.IsNullOrEmpty(departmentId))
+        {
+            var deptId = Guid.Parse(departmentId);
+            _filteredRoles = _roles.Where(r => r.DepartmentId == deptId).ToList();
+        }
+        else
+        {
+            _filteredRoles = new List<RoleDto>();
+        }
+        
+        // Reset role selection when department changes
+        _mappingModel.RoleId = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task HandleSubmit(UserRoleMappingFormDialog.MappingFormModel model)
+    {
+        _isSaving = true;
+        try
+        {
+            var userId = Guid.Parse(model.UserId);
+            var roleId = Guid.Parse(model.RoleId);
+            var departmentId = Guid.Parse(model.DepartmentId);
+
+            // Get current user email for AssignedByEmail
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var currentUserEmail = authState.User.Identity?.Name ?? "";
+
+            if (_isEditMode && _selectedMapping != null)
+            {
+                var updateRequest = new UpdateUserRoleMappingRequest
+                {
+                    Id = _selectedMapping.Id,
+                    UserId = userId,
+                    RoleId = roleId,
+                    DepartmentId = departmentId,
+                    AssignedByEmail = currentUserEmail
+                };
+
+                var response = await RBACService.UpdateUserRoleMappingAsync(_selectedMapping.Id, updateRequest);
+                if (response.Success)
+                {
+                    Snackbar.Add("User role mapping updated successfully", Severity.Success);
+                    await LoadData();
+                    CloseDialog();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to update user role mapping", Severity.Error);
+                }
+            }
+            else
+            {
+                var createRequest = new CreateUserRoleMappingRequest
+                {
+                    UserId = userId,
+                    RoleId = roleId,
+                    DepartmentId = departmentId,
+                    AssignedByEmail = currentUserEmail
+                };
+
+                var response = await RBACService.CreateUserRoleMappingAsync(createRequest);
+                if (response.Success)
+                {
+                    Snackbar.Add("User role mapping created successfully", Severity.Success);
+                    await LoadData();
+                    CloseDialog();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to create user role mapping", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error saving user role mapping");
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task DeleteMapping(UserRoleMappingDto mapping)
+    {
+        try
+        {
+            var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation",
+                "Delete User Role Mapping",
+                $"Are you sure you want to delete the mapping for user '{mapping.UserEmail}' with role '{mapping.RoleName}'? This action cannot be undone.");
+
+            if (confirmed)
+            {
+                var response = await RBACService.DeleteUserRoleMappingAsync(mapping.Id);
+                if (response.Success)
+                {
+                    Snackbar.Add("User role mapping deleted successfully", Severity.Success);
+                    await LoadData();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to delete user role mapping", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting user role mapping");
+            Snackbar.Add($"Error deleting user role mapping: {ex.Message}", Severity.Error);
+        }
+    }
+}

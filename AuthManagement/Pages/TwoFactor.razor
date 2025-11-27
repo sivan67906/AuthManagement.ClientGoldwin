@@ -1,0 +1,245 @@
+@page "/two-factor"
+@using AuthManagement.Services
+@using AuthManagement.Models
+@using Microsoft.AspNetCore.Authorization
+@using System.Net.Http.Headers
+@using System.Net.Http.Json
+@attribute [Authorize]
+@inject HttpClient Http
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject NavigationManager Nav
+
+<div class="twofactor-container">
+    <div class="twofactor-card">
+        <div class="twofactor-header text-center mb-4">
+            <div class="twofactor-icon-wrapper mb-3">
+                <i class="bi-shield-lock-fill fs-1 text-primary"></i>
+            </div>
+            <h4>Two-Factor Authentication</h4>
+            <p class="text-muted">Enhance your account security</p>
+        </div>
+
+        <hr class="my-4" />
+
+        @if (isLoading)
+        {
+            <div class="loading-section text-center">
+                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                <p>Loading settings...</p>
+            </div>
+        }
+        else
+        {
+            <div class="twofactor-content">
+                <div class="card p-3">
+                    <div class="status-header d-flex justify-content-between align-items-center">
+                        <h6>Current Status</h6>
+                        @if (isEnabled)
+                        {
+                            <span class="badge bg-success">Enabled</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Disabled</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="card p-3">
+                    <p class="text-center text-muted mb-0">
+                        Two-factor authentication adds an extra layer of security to your account by requiring
+                        a verification code in addition to your password when signing in.
+                    </p>
+                </div>
+
+                <div class="options-section mt-3">
+                    <h6>Authentication Settings</h6>
+
+                    <!-- Disable 2FA -->
+                    <div class="card p-3 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="twoFactorOptions"
+                                   id="disable2fa"
+                                   checked="@(!isEnabled)"
+                                   disabled="@isBusy"
+                                   @onclick="async () => await SetTwoFactor(false)" />
+                            <label class="form-check-label" for="disable2fa">
+                                Disable Two-Factor
+                            </label>
+                            <div class="option-header d-flex align-items-center mb-2 mt-1">
+                                <i class="bi-unlock fs-5 text-danger me-2"></i>
+                                <strong>Less Secure</strong>
+                            </div>
+                            <p class="text-muted mb-0">Sign in with just your password</p>
+                        </div>
+                    </div>
+
+                    <!-- Enable 2FA -->
+                    <div class="card p-3 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="twoFactorOptions"
+                                   id="enable2fa"
+                                   checked="@isEnabled"
+                                   disabled="@isBusy"
+                                   @onclick="async () => await SetTwoFactor(true)" />
+                            <label class="form-check-label" for="enable2fa">
+                                Enable Two-Factor
+                            </label>
+                            <div class="option-header d-flex align-items-center mb-2 mt-1">
+                                <i class="bi-lock-fill fs-5 text-success me-2"></i>
+                                <strong>Recommended</strong>
+                            </div>
+                            <p class="text-muted mb-0">Require verification code during sign-in</p>
+                        </div>
+                    </div>
+                </div>
+
+                @if (isBusy)
+                {
+                    <div class="saving-section text-center mt-3">
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                        <p class="text-muted mb-0">Saving changes...</p>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(message))
+                {
+                    <div class="alert alert-info mt-3" role="alert">
+                        @message
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .twofactor-container {
+        display: flex;
+        justify-content: center;
+        padding: 2rem 1rem;
+        min-height: 70vh;
+        align-items: start;
+    }
+
+    .twofactor-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 2.5rem;
+        max-width: 700px;
+        width: 100%;
+    }
+
+    .loading-section {
+        padding: 2rem 0;
+    }
+
+    .twofactor-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .saving-section {
+        padding: 1rem;
+        background: #fef3c7;
+        border-radius: 8px;
+    }
+
+    @@media (max-width: 600px) {
+        .twofactor-card {
+            padding: 1.5rem;
+        }
+
+        .status-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    }
+</style>
+
+@code {
+    private bool isLoading = true;
+    private bool isBusy;
+    private bool isEnabled;
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await AuthProvider.GetTokenAsync();
+        if (string.IsNullOrEmpty(token))
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        Http.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", token);
+
+        try
+        {
+            var resp = await Http.GetAsync("/auth/profile");
+            if (resp.IsSuccessStatusCode)
+            {
+                var api = await resp.Content.ReadFromJsonAsync<ApiResponse<ProfileDto>>();
+                if (api?.Success == true && api.Data is not null)
+                {
+                    isEnabled = api.Data.TwoFactorEnabled;
+                }
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SetTwoFactor(bool enable)
+    {
+        if (isBusy || isEnabled == enable) return;
+
+        isBusy = true;
+        message = null;
+
+        try
+        {
+            var token = await AuthProvider.GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                Nav.NavigateTo("/login");
+                return;
+            }
+
+            Http.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage? response;
+            if (enable)
+            {
+                response = await Http.PostAsync("/auth/2fa/enable", null);
+            }
+            else
+            {
+                response = await Http.PostAsync("/auth/2fa/disable", null);
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                isEnabled = enable;
+                message = enable
+                    ? "Two-factor authentication has been enabled successfully."
+                    : "Two-factor authentication has been disabled successfully.";
+            }
+            else
+            {
+                message = "Failed to update two-factor settings. Please try again.";
+            }
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+}

@@ -1,0 +1,296 @@
+@page "/permission"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@using AuthManagement.Shared
+@inject RBACService RBACService
+@inject PermissionService PermissionService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<Permission> Logger
+@inject ISnackbar Snackbar
+@attribute [Authorize]
+
+<PageTitle>Permission Management</PageTitle>
+
+<style>
+    /* Reusing the same styles from Department/Role pages */
+    .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0; }
+    .page-title { font-size: 22px; font-weight: 600; color: #333; margin: 0; }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; margin: 0; padding: 0; list-style: none; }
+    .breadcrumb-item { display: flex; align-items: center; gap: 8px; }
+    .breadcrumb-separator { color: #999; }
+    .breadcrumb-link { color: #7c3aed; text-decoration: none; }
+    .breadcrumb-link:hover { text-decoration: underline; }
+    .breadcrumb-current { color: #666; }
+    .permission-container { background: white; border-radius: 8px; overflow: hidden; }
+    .toolbar-container { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: white; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; gap: 16px; }
+    .toolbar-left { display: flex; align-items: center; }
+    .permissions-list-label { font-size: 14px; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.5px; }
+    .toolbar-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .search-box { position: relative; min-width: 280px; }
+    .search-input { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid #d9d9e3; border-radius: 6px; font-size: 14px; }
+    .search-input:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1); }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; font-size: 18px; }
+    .add-button { background-color: #7c3aed; color: white; border: none; padding: 8px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background-color 0.2s; white-space: nowrap; }
+    .add-button:hover { background-color: #6d28d9; }
+    .add-button i { font-size: 18px; }
+    .permission-table { width: 100%; border-collapse: collapse; }
+    .permission-table thead { background-color: #fafafa; }
+    .permission-table th { padding: 12px 16px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f0f0f0; cursor: pointer; user-select: none; color: black; background: white; }
+    .permission-table th:last-child { border-right: none; }
+    .permission-table th.text-center { text-align: center; }
+    .permission-table tbody tr { transition: background-color 0.2s; border-bottom: 1px solid #f8f9fa; }
+    .permission-table td { padding: 10px 16px; font-size: 14px; color: #333; }
+    .permission-table tbody tr:last-child { border-bottom: none; }
+    .serial-number { color: #666; font-weight: 500; }
+    .permission-name { color: #333; font-weight: 600; }
+    .description-text { color: #666; }
+    .action-buttons { display: flex; gap: 6px; justify-content: center; align-items: center; }
+    .action-btn { width: 32px; height: 32px; border: none; background: #f5f5f5; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: #666; font-size: 18px; }
+    .action-btn i { font-size: 18px; display: block; line-height: 1; }
+    .action-btn:hover { transform: translateY(-2px); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); }
+    .action-btn.view-btn { background-color: #e3f2fd; color: #2196f3; }
+    .action-btn.view-btn:hover { background-color: #2196f3; color: white; }
+    .action-btn.edit-btn { background-color: #fff3e0; color: #ff9800; }
+    .action-btn.edit-btn:hover { background-color: #ff9800; color: white; }
+    .action-btn.delete-btn { background-color: #ffebee; color: #f44336; }
+    .action-btn.delete-btn:hover { background-color: #f44336; color: white; }
+    .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: white; border-top: 1px solid #f0f0f0; }
+    .pagination-info { font-size: 14px; color: #666; }
+    .pagination-buttons { display: flex; gap: 8px; align-items: center; }
+    .page-btn { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid #d9d9e3; background: white; border-radius: 6px; cursor: pointer; font-size: 14px; color: #333; transition: all 0.2s; }
+    .page-btn:hover:not(:disabled) { border-color: #7c3aed; color: #7c3aed; }
+    .page-btn.active { background: #7c3aed; color: white; border-color: #7c3aed; }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .ellipsis { padding: 0 8px; color: #999; }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="page-header mb-3">
+        <div>
+            <h4 class="page-title">Permission Management</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="/" class="breadcrumb-link"><i class="ti ti-home"></i><span>Home</span></a>
+                        <span class="breadcrumb-separator">/</span>
+                    </li>
+                    <li class="breadcrumb-item breadcrumb-current">Permissions</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="permission-container">
+        <div class="toolbar-container">
+            <div class="toolbar-left">
+                <span class="permissions-list-label">Permissions List</span>
+            </div>
+            <div class="toolbar-right">
+                <div class="search-box">
+                    <i class="ti ti-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search permissions..."
+                           @bind-value="_searchString" @bind-value:event="oninput"
+                           @onkeyup="@(() => OnSearchChanged(_searchString))" />
+                </div>
+                @if (_canAdd)
+                {
+                    <button class="add-button" @onclick="OpenAddDialog">
+                        <i class="ti ti-plus"></i><span>Add Permission</span>
+                    </button>
+                }
+            </div>
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                <p class="mt-2">Loading permissions...</p>
+            </div>
+        }
+        else if (_hasError)
+        {
+            <div class="alert alert-danger m-3" role="alert"><i class="ti ti-alert-circle me-2"></i>@_errorMessage</div>
+        }
+        else if (_pagedPermissions != null && _pagedPermissions.Any())
+        {
+            <table class="permission-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">No.</th>
+                        <th @onclick="@(() => ToggleSort("name"))">Permission Name</th>
+                        <th @onclick="@(() => ToggleSort("description"))">Description</th>
+                        <th class="text-center" style="width: 100px;">Status</th>
+                        <th class="text-center" style="width: 150px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var permission in _pagedPermissions)
+                    {
+                        <tr>
+                            <td class="serial-number">@GetGlobalSerialNumber(permission)</td>
+                            <td class="permission-name">@permission.Name</td>
+                            <td class="description-text">@TruncateDescription(permission.Description)</td>
+                            <td class="text-center">
+                                <span class="badge @(permission.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(permission.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    @if (_canView)
+                                    {
+                                        <button class="action-btn view-btn" @onclick="@(() => OpenViewDialog(permission))" title="View"><i class="ti ti-eye"></i></button>
+                                    }
+                                    @if (_canEdit)
+                                    {
+                                        <button class="action-btn edit-btn" @onclick="@(() => OpenEditDialog(permission))" title="Edit"><i class="ti ti-edit"></i></button>
+                                    }
+                                    @if (_canDelete)
+                                    {
+                                        <button class="action-btn delete-btn" @onclick="@(() => DeletePermission(permission))" title="Delete"><i class="ti ti-trash"></i></button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="pagination-container">
+                <div class="pagination-info">Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries</div>
+                <div class="pagination-buttons">
+                    <button class="page-btn" @onclick="@(() => GoToPage(1))" disabled="@(_currentPage == 1)"><i class="ti ti-chevrons-left"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage - 1))" disabled="@(_currentPage == 1)"><i class="ti ti-chevron-left"></i></button>
+                    @if (GetStartPage() > 1) { <span class="ellipsis">...</span> }
+                    @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                    {
+                        var pageNum = i;
+                        <button class="page-btn @(pageNum == _currentPage ? "active" : "")" @onclick="@(() => GoToPage(pageNum))">@pageNum</button>
+                    }
+                    @if (GetEndPage() < _totalPages) { <span class="ellipsis">...</span> }
+                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage + 1))" disabled="@(_currentPage >= _totalPages)"><i class="ti ti-chevron-right"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_totalPages))" disabled="@(_currentPage >= _totalPages)"><i class="ti ti-chevrons-right"></i></button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info m-3" role="alert"><i class="ti ti-info-circle me-2"></i>No permissions found.</div>
+        }
+    </div>
+</div>
+
+<PermissionFormDialog IsOpen="@_isDialogOpen" IsEditMode="@_isEditMode" IsSaving="@_isSaving" FormModel="@_permissionModel" OnCancel="@CloseDialog" OnSubmit="@HandleSubmit" />
+<PermissionDetailsOffcanvas IsOpen="@_isOffcanvasOpen" Permission="@_selectedPermission" OnClose="@CloseOffcanvas" />
+
+@code {
+    private List<PermissionDto> _permissions = new();
+    private List<PermissionDto> _filteredPermissions = new();
+    private List<PermissionDto> _pagedPermissions = new();
+    private PermissionDto? _selectedPermission;
+    private PermissionFormDialog.PermissionFormModel _permissionModel = new();
+    private bool _isLoading = true, _isSaving = false, _hasError = false, _isDialogOpen = false, _isOffcanvasOpen = false, _isEditMode = false;
+    private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "name", _sortDirection = "asc";
+    private int _currentPage = 1, _pageSize = 10, _totalItems = 0, _totalPages = 1;
+    private bool _canView, _canAdd, _canEdit, _canDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (!authState.User.Identity?.IsAuthenticated ?? true) { NavigationManager.NavigateTo("/login"); return; }
+            var permissions = await PermissionService.GetPagePermissionsAsync("/permission");
+            _canView = permissions.CanView; _canAdd = permissions.CanAdd; _canEdit = permissions.CanEdit; _canDelete = permissions.CanDelete;
+            await LoadPermissions();
+        }
+        catch (Exception ex) { Logger.LogError(ex, "Error initializing Permission page"); _hasError = true; _errorMessage = $"Error initializing page: {ex.Message}"; _isLoading = false; }
+    }
+
+    private async Task LoadPermissions()
+    {
+        _isLoading = true; _hasError = false;
+        try
+        {
+            var response = await RBACService.GetAllPermissionsAsync();
+            if (response.Success && response.Data != null) { _permissions = response.Data; UpdateFilteredPermissions(); }
+            else { _hasError = true; _errorMessage = response.Message ?? "Failed to load permissions"; }
+        }
+        catch (Exception ex) { Logger.LogError(ex, "Error loading permissions"); _hasError = true; _errorMessage = $"Error loading permissions: {ex.Message}"; }
+        finally { _isLoading = false; }
+    }
+
+    private void UpdateFilteredPermissions()
+    {
+        _filteredPermissions = string.IsNullOrWhiteSpace(_searchString) ? _permissions.ToList() : _permissions.Where(p => FilterFunc(p)).ToList();
+        _filteredPermissions = (_sortColumn, _sortDirection) switch
+        {
+            ("name", "asc") => _filteredPermissions.OrderBy(p => p.Name).ToList(),
+            ("name", "desc") => _filteredPermissions.OrderByDescending(p => p.Name).ToList(),
+            ("description", "asc") => _filteredPermissions.OrderBy(p => p.Description ?? string.Empty).ToList(),
+            ("description", "desc") => _filteredPermissions.OrderByDescending(p => p.Description ?? string.Empty).ToList(),
+            _ => _filteredPermissions.OrderBy(p => p.Name).ToList()
+        };
+        _totalItems = _filteredPermissions.Count; _totalPages = _totalItems > 0 ? (int)Math.Ceiling((double)_totalItems / _pageSize) : 1;
+        if (_currentPage > _totalPages) _currentPage = _totalPages; if (_currentPage < 1) _currentPage = 1;
+        _pagedPermissions = _filteredPermissions.Skip((_currentPage - 1) * _pageSize).Take(_pageSize).ToList();
+    }
+
+    private void OnSearchChanged(string value) { _searchString = value; _currentPage = 1; UpdateFilteredPermissions(); StateHasChanged(); }
+    private void ToggleSort(string column) { if (_sortColumn == column) _sortDirection = _sortDirection == "asc" ? "desc" : "asc"; else { _sortColumn = column; _sortDirection = "asc"; } UpdateFilteredPermissions(); StateHasChanged(); }
+    private bool FilterFunc(PermissionDto permission) => string.IsNullOrWhiteSpace(_searchString) || permission.Name.ToLower().Contains(_searchString.ToLower()) || (permission.Description?.ToLower().Contains(_searchString.ToLower()) ?? false);
+    private int GetGlobalSerialNumber(PermissionDto permission) => _filteredPermissions.IndexOf(permission) + 1;
+    private string TruncateDescription(string? description) => string.IsNullOrEmpty(description) ? "-" : description.Length <= 50 ? description : description.Substring(0, 50) + "...";
+    private int GetStartRecord() => _totalItems > 0 ? (_currentPage - 1) * _pageSize + 1 : 0;
+    private int GetEndRecord() => Math.Min(_currentPage * _pageSize, _totalItems);
+    private int GetStartPage() => Math.Max(1, _currentPage - 2);
+    private int GetEndPage() => Math.Min(_totalPages, _currentPage + 2);
+    private void GoToPage(int page) { if (page >= 1 && page <= _totalPages) { _currentPage = page; UpdateFilteredPermissions(); StateHasChanged(); } }
+    private void OpenAddDialog() { _selectedPermission = null; _isEditMode = false; _permissionModel = new PermissionFormDialog.PermissionFormModel(); _isDialogOpen = true; }
+    private void OpenEditDialog(PermissionDto permission) { _selectedPermission = permission; _isEditMode = true; _permissionModel = new PermissionFormDialog.PermissionFormModel { Name = permission.Name, Description = permission.Description }; _isDialogOpen = true; }
+    private void OpenViewDialog(PermissionDto permission) { _selectedPermission = permission; _isOffcanvasOpen = true; }
+    private void CloseDialog() { _isDialogOpen = false; _selectedPermission = null; _permissionModel = new PermissionFormDialog.PermissionFormModel(); _isEditMode = false; }
+    private void CloseOffcanvas() { _isOffcanvasOpen = false; _selectedPermission = null; }
+
+    private async Task HandleSubmit(PermissionFormDialog.PermissionFormModel model)
+    {
+        _isSaving = true;
+        try
+        {
+            if (_isEditMode && _selectedPermission != null)
+            {
+                var updateRequest = new UpdatePermissionRequest { Id = _selectedPermission.Id, Name = model.Name, Description = model.Description };
+                var response = await RBACService.UpdatePermissionAsync(_selectedPermission.Id, updateRequest);
+                if (response.Success) { Snackbar.Add("Permission updated successfully", Severity.Success); await LoadPermissions(); CloseDialog(); }
+                else Snackbar.Add(response.Message ?? "Failed to update permission", Severity.Error);
+            }
+            else
+            {
+                var createRequest = new CreatePermissionRequest { Name = model.Name, Description = model.Description };
+                var response = await RBACService.CreatePermissionAsync(createRequest);
+                if (response.Success) { Snackbar.Add("Permission created successfully", Severity.Success); await LoadPermissions(); CloseDialog(); }
+                else Snackbar.Add(response.Message ?? "Failed to create permission", Severity.Error);
+            }
+        }
+        catch (Exception ex) { Logger.LogError(ex, "Error saving permission"); Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
+        finally { _isSaving = false; }
+    }
+
+    private async Task DeletePermission(PermissionDto permission)
+    {
+        try
+        {
+            var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation", "Delete Permission", $"Are you sure you want to delete '{permission.Name}'? This action cannot be undone.");
+            if (confirmed)
+            {
+                var response = await RBACService.DeletePermissionAsync(permission.Id);
+                if (response.Success) { Snackbar.Add("Permission deleted successfully", Severity.Success); await LoadPermissions(); }
+                else Snackbar.Add(response.Message ?? "Failed to delete permission", Severity.Error);
+            }
+        }
+        catch (Exception ex) { Logger.LogError(ex, "Error deleting permission"); Snackbar.Add($"Error deleting permission: {ex.Message}", Severity.Error); }
+    }
+}

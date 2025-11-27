@@ -1,0 +1,26 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11201.2
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthManagement", "AuthManagement\AuthManagement.csproj", "{9EE541FE-4C4F-49C7-BD9A-9F94854E9615}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EAC372C3-BE67-4C34-B107-D6D9431807D7}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9EE541FE-4C4F-49C7-BD9A-9F94854E9615}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EE541FE-4C4F-49C7-BD9A-9F94854E9615}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EE541FE-4C4F-49C7-BD9A-9F94854E9615}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EE541FE-4C4F-49C7-BD9A-9F94854E9615}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

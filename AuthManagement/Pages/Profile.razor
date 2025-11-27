@@ -1,0 +1,135 @@
+@page "/profile"
+@using AuthManagement.Models
+@using System.Net.Http.Headers
+@using System.Net.Http.Json
+@using AuthManagement.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject HttpClient Http
+@inject JwtAuthenticationStateProvider AuthProvider
+
+<div class="profile-container">
+    <div class="profile-card">
+        <div class="profile-header">
+            <div class="profile-icon-wrapper">
+                <i class="bi bi-person-circle profile-icon"></i>
+            </div>
+            <h4 class="text-center mb-4">User Profile</h4>
+            <p class="text-center text-muted mb-4">View your account information</p>
+        </div>
+
+        <hr class="my-4" />
+
+        @if (profile is null)
+        {
+            <div class="loading-section">
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                <p>Loading your profile...</p>
+            </div>
+        }
+        else
+        {
+            <div class="profile-details">
+                <div class="card p-3">
+                    <div class="info-row">
+                        <div class="info-label">
+                            <i class="bi bi-envelope"></i>
+                            <p class="ms-2 mb-0">Email</p>
+                        </div>
+                        <p>@profile.Email</p>
+                    </div>
+                </div>
+
+                <div class="card p-3">
+                    <div class="info-row">
+                        <div class="info-label">
+                            <i class="bi bi-person"></i>
+                            <p class="ms-2 mb-0">Name</p>
+                        </div>
+                        <p>@profile.FirstName @profile.LastName</p>
+                    </div>
+                </div>
+
+                <div class="card p-3">
+                    <div class="info-row">
+                        <div class="info-label">
+                            <i class="bi bi-envelope-check"></i>
+                            <p class="ms-2 mb-0">Email Verification</p>
+                        </div>
+                        @if (profile.EmailConfirmed)
+                        {
+                            <span class="badge bg-success">Verified</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning">Not Verified</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="card p-3">
+                    <div class="info-row">
+                        <div class="info-label">
+                            <i class="bi bi-shield-lock"></i>
+                            <p class="ms-2 mb-0">Two-Factor Authentication</p>
+                        </div>
+                        @if (profile.TwoFactorEnabled)
+                        {
+                            <span class="badge bg-success">Enabled</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Disabled</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="profile-actions">
+                <button type="button" class="btn btn-primary w-100">
+                    Manage Two-Factor Authentication
+                </button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-danger mt-3" role="alert">@message</div>
+        }
+    </div>
+</div>
+
+@code {
+    private ProfileDto? profile;
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await AuthProvider.GetTokenAsync();
+        if (!string.IsNullOrEmpty(token))
+        {
+            Http.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        var response = await Http.GetAsync("/auth/profile");
+        if (response.IsSuccessStatusCode)
+        {
+            var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<ProfileDto>>();
+            if (apiResponse?.Success == true && apiResponse.Data is not null)
+            {
+                profile = apiResponse.Data;
+            }
+            else
+            {
+                message = apiResponse?.Message ?? "Failed to load profile.";
+            }
+        }
+        else
+        {
+            message = "Failed to load profile.";
+        }
+    }
+}

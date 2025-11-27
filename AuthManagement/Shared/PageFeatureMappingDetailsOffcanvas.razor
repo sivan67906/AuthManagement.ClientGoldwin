@@ -1,0 +1,232 @@
+@using AuthManagement.Models
+
+@if (IsOpen)
+{
+    <div class="offcanvas-backdrop @(IsOpen ? "show" : "")" @onclick:stopPropagation="true"></div>
+    
+    <div class="offcanvas offcanvas-end @(IsOpen ? "show" : "")" tabindex="-1" @onclick:stopPropagation="true">
+        <div class="offcanvas-header">
+            <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
+                <div class="avatar-container">
+                    <i class="ti tabler-puzzle" style="font-size: 32px; color: white;"></i>
+                </div>
+                <div style="flex: 1;">
+                    <h5 style="margin: 0; font-weight: 600; font-size: 20px;">@Mapping?.PageName</h5>
+                    <p style="margin: 4px 0 0 0; opacity: 0.9; font-size: 14px;">
+                        Page Feature Mapping Details
+                    </p>
+                </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" @onclick="Close"></button>
+        </div>
+        
+        <div class="offcanvas-body">
+            <div class="info-section">
+                <h6 class="section-title">MAPPING INFORMATION</h6>
+                <div class="details-list">
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="ti tabler-file" style="color: #667eea;"></i>
+                        </div>
+                        <div class="detail-content">
+                            <div class="detail-label">Page Name</div>
+                            <div class="detail-value">@Mapping?.PageName</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="ti tabler-puzzle" style="color: #667eea;"></i>
+                        </div>
+                        <div class="detail-content">
+                            <div class="detail-label">Feature Name</div>
+                            <div class="detail-value">@Mapping?.FeatureName</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="ti tabler-toggle-right" style="color: #667eea;"></i>
+                        </div>
+                        <div class="detail-content">
+                            <div class="detail-label">Status</div>
+                            <div class="detail-value">
+                                @if (Mapping?.IsActive ?? false)
+                                {
+                                    <span class="status-badge active">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge inactive">Inactive</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h6 class="section-title">CREATION DETAILS</h6>
+                <div class="details-list">
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="ti tabler-calendar" style="color: #667eea;"></i>
+                        </div>
+                        <div class="detail-content">
+                            <div class="detail-label">Created At</div>
+                            <div class="detail-value">@Mapping?.CreatedAt.ToString("MMM dd, yyyy HH:mm")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .offcanvas-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 11000;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .offcanvas-backdrop.show {
+        opacity: 1;
+    }
+
+    .offcanvas {
+        position: fixed;
+        top: 0;
+        right: -450px;
+        z-index: 11001;
+        width: 450px;
+        height: 100vh;
+        background-color: white;
+        box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+        transition: right 0.3s ease-in-out;
+        overflow-y: auto;
+    }
+
+    .offcanvas.show {
+        right: 0;
+    }
+
+    .offcanvas-header {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 24px;
+    }
+
+    .avatar-container {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .offcanvas-body {
+        padding: 0;
+    }
+
+    .info-section {
+        padding: 24px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .section-title {
+        color: #666;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+
+    .details-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .detail-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 20px;
+    }
+
+    .detail-content {
+        flex: 1;
+    }
+
+    .detail-label {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 2px;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .status-badge.active {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .status-badge.inactive {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public DisplayPageFeatureMapping? Mapping { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

@@ -1,0 +1,434 @@
+/* ========================================
+   App Layout Structure
+   ======================================== */
+.app-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ========================================
+   Sidebar Styles
+   ======================================== */
+.sidebar {
+    width: 270px;
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    color: #94a3b8;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease;
+    position: relative;
+    z-index: 1000;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar.collapsed {
+    width: 80px;
+}
+
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .nav-badge,
+.sidebar.collapsed .nav-arrow,
+.sidebar.collapsed .nav-arrow-sm,
+.sidebar.collapsed .nav-section-title,
+.sidebar.collapsed .loading-text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+/* ========================================
+   Sidebar Header
+   ======================================== */
+.sidebar-header {
+    padding: 1.5rem 1.25rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 70px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-icon {
+    font-size: 1.75rem;
+    color: #8b5cf6;
+}
+
+.logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+    background: rgba(148, 163, 184, 0.1);
+    color: #fff;
+}
+
+/* ========================================
+   Navigation Styles
+   ======================================== */
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem 0;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.05);
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.2);
+    border-radius: 3px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.3);
+}
+
+/* ========================================
+   Navigation Section
+   ======================================== */
+.nav-section {
+    margin-bottom: 2rem;
+}
+
+.nav-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 1.25rem;
+    margin-bottom: 0.75rem;
+    transition: opacity 0.3s ease;
+}
+
+/* ========================================
+   Navigation Items
+   ======================================== */
+.nav-item-group {
+    margin-bottom: 0.25rem;
+}
+
+.nav-item,
+.nav-subitem,
+.nav-page {
+    display: block;
+    padding: 0.75rem 1.25rem;
+    color: #94a3b8;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+    position: relative;
+}
+
+.nav-item:hover,
+.nav-subitem:hover,
+.nav-page:hover {
+    background: rgba(148, 163, 184, 0.08);
+    color: #fff;
+}
+
+.nav-item.active,
+.nav-subitem.active,
+.nav-page.active {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    border-left-color: #8b5cf6;
+}
+
+.nav-item.expandable,
+.nav-subitem.expandable {
+    cursor: pointer;
+}
+
+.nav-item-content,
+.nav-subitem-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.nav-icon {
+    font-size: 1.25rem;
+    min-width: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-bullet {
+    font-size: 0.5rem;
+    min-width: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-page-bullet {
+    font-size: 0.35rem;
+    min-width: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-text {
+    flex: 1;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+}
+
+.nav-badge {
+    background: #f59e0b;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.375rem;
+    min-width: 1.5rem;
+    text-align: center;
+    transition: opacity 0.3s ease;
+}
+
+.nav-arrow,
+.nav-arrow-sm {
+    font-size: 0.875rem;
+    transition: transform 0.2s ease, opacity 0.3s ease;
+    margin-left: auto;
+}
+
+.nav-item.expanded .nav-arrow,
+.nav-subitem.expanded .nav-arrow-sm {
+    transform: rotate(180deg);
+}
+
+/* ========================================
+   Submenu & Pages
+   ======================================== */
+.nav-submenu {
+    background: rgba(15, 23, 42, 0.5);
+}
+
+.nav-subitem {
+    padding-left: 2.5rem;
+    font-size: 0.875rem;
+}
+
+.nav-pages {
+    background: rgba(15, 23, 42, 0.7);
+}
+
+.nav-page {
+    padding-left: 3.75rem;
+    font-size: 0.8125rem;
+}
+
+/* ========================================
+   Loading & Error States
+   ======================================== */
+.nav-loading,
+.nav-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    text-align: center;
+    gap: 0.75rem;
+}
+
+.nav-loading .spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.loading-text {
+    font-size: 0.875rem;
+    color: #64748b;
+    transition: opacity 0.3s ease;
+}
+
+.nav-error i {
+    font-size: 2rem;
+}
+
+/* ========================================
+   Main Content Area
+   ======================================== */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #f8fafc;
+}
+
+/* ========================================
+   Top Header
+   ======================================== */
+.top-header {
+    height: 70px;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.page-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: #475569;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.user-menu:hover {
+    color: #1e293b;
+}
+
+.user-menu i {
+    font-size: 1.5rem;
+}
+
+.dropdown-menu {
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0;
+    min-width: 200px;
+}
+
+.dropdown-item {
+    padding: 0.625rem 1rem;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dropdown-item:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.dropdown-item i {
+    width: 1.25rem;
+}
+
+/* ========================================
+   Page Content
+   ======================================== */
+.page-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+.page-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.page-content::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.page-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.page-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+@media (max-width: 768px) {
+    .sidebar {
+        position: absolute;
+        left: -270px;
+        height: 100%;
+        z-index: 1050;
+    }
+    
+    .sidebar.show {
+        left: 0;
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .page-content {
+        padding: 1rem;
+    }
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+.text-muted {
+    color: #64748b !important;
+}
+
+.text-primary {
+    color: #8b5cf6 !important;
+}
+
+.text-danger {
+    color: #ef4444 !important;
+}

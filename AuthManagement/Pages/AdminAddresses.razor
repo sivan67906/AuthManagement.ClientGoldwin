@@ -1,0 +1,91 @@
+@page "/admin/addresses"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@using AuthManagement.Constants
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Net.Http.Json
+@using System.Net.Http.Headers
+@attribute [Authorize(Roles = UIRoles.Admin)]
+@inject HttpClient Http
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject AuthenticationStateProvider AuthStateProvider
+
+
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+<h3>Admin: All User Addresses</h3>
+
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <button @onclick="LoadAll">Load All Addresses</button>
+
+        <ul>
+            @if (items is not null)
+            {
+                @foreach (var a in items)
+                {
+                    <li>@a.Email - @a.Line1, @a.City</li>
+                }
+            }
+        </ul>
+    </Authorized>
+    <NotAuthorized>
+        <p>You must be an admin to view this page.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p>@message</p>
+}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<AllAddressItem>? items;
+    private string? message;
+
+    private class AllAddressItem
+    {
+        public string Id { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Line1 { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+    }
+
+    private async Task LoadAll()
+    {
+        var token = await AuthProvider.GetTokenAsync();
+        if (!string.IsNullOrEmpty(token))
+        {
+            Http.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        var response = await Http.GetAsync("/user/addresses/admin/all");
+        if (response.IsSuccessStatusCode)
+        {
+            var api = await response.Content.ReadFromJsonAsync<ApiResponse<List<AllAddressItem>>>();
+            if (api?.Success == true)
+            {
+                items = api.Data;
+                message = null;
+            }
+            else
+            {
+                message = api?.Message ?? "Failed to load.";
+            }
+        }
+        else
+        {
+            message = "Request failed.";
+        }
+    }
+}

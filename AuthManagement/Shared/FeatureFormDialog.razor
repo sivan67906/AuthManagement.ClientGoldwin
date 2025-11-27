@@ -1,0 +1,145 @@
+@using AuthManagement.Models
+@using System.ComponentModel.DataAnnotations
+
+@if (IsOpen)
+{
+    <div class="modal-backdrop show" @onclick:stopPropagation="true"></div>
+    <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="ti ti-sparkles" style="color: #7c3aed; margin-right: 8px;"></i>
+                        @(IsEditMode ? "Edit Feature" : "Add Feature")
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="HandleCancel" disabled="@IsSaving"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                    <EditForm Model="@FormModel" OnValidSubmit="HandleValidSubmit">
+                        <DataAnnotationsValidator />
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Parent Feature</label>
+                            <select @bind="FormModel.ParentFeatureId" class="form-control" disabled="@IsSaving">
+                                <option value="">No Parent (Top Level)</option>
+                                @foreach (var feature in ParentFeatures.Where(f => f.Id != FormModel.Id))
+                                {
+                                    <option value="@feature.Id">@feature.Name</option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Feature Name<span class="text-danger">*</span></label>
+                            <InputText @bind-Value="FormModel.Name" class="form-control" placeholder="Enter feature name" disabled="@IsSaving" />
+                            <ValidationMessage For="@(() => FormModel.Name)" class="text-danger" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <InputTextArea @bind-Value="FormModel.Description" class="form-control" placeholder="Enter description" rows="3" disabled="@IsSaving" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Route URL</label>
+                            <InputText @bind-Value="FormModel.RouteUrl" class="form-control" placeholder="/example" disabled="@IsSaving" />
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Display Order<span class="text-danger">*</span></label>
+                                <InputNumber @bind-Value="FormModel.DisplayOrder" class="form-control" disabled="@IsSaving" />
+                                <ValidationMessage For="@(() => FormModel.DisplayOrder)" class="text-danger" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Level<span class="text-danger">*</span></label>
+                                <InputNumber @bind-Value="FormModel.Level" class="form-control" disabled="@IsSaving" />
+                                <ValidationMessage For="@(() => FormModel.Level)" class="text-danger" />
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Icon Class</label>
+                            <InputText @bind-Value="FormModel.Icon" class="form-control" placeholder="ti-icon-name" disabled="@IsSaving" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <InputCheckbox @bind-Value="FormModel.IsMainMenu" class="form-check-input" id="isMainMenu" disabled="@IsSaving" />
+                                <label class="form-check-label" for="isMainMenu">Is Main Menu</label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-label-secondary" @onclick="HandleCancel" disabled="@IsSaving">Cancel</button>
+                            <button type="submit" class="btn btn-primary" disabled="@IsSaving">
+                                @if (IsSaving) { <span class="spinner-border spinner-border-sm me-2"></span><span>Saving...</span> }
+                                else { <i class="ti ti-check me-1"></i><span>@(IsEditMode ? "Update" : "Create")</span> }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .modal-backdrop { position: fixed; top: 0; left: 0; z-index: 11000; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); }
+    .modal { z-index: 11001; }
+    .modal-dialog-centered { min-height: calc(100% - 3.5rem); display: flex; align-items: center; margin: 1.75rem auto; max-width: 540px; width: 100%; padding: 0 15px; }
+    .modal-content { border-radius: 8px; border: none; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid #e9ecef; }
+    .modal-title { font-size: 18px; font-weight: 600; color: #333; display: flex; align-items: center; margin: 0; }
+    .btn-close { border-radius: 1rem !important; }
+    .form-label { font-weight: 500; color: #333; margin-bottom: 8px; font-size: 14px; }
+    .form-control { border: 1px solid #d9d9e3; border-radius: 6px; padding: 10px 12px; font-size: 14px; }
+    .form-control:focus { border-color: #7c3aed; box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1); outline: none; }
+    .btn-primary { background-color: #7c3aed; border-color: #7c3aed; color: white; padding: 8px 20px; font-size: 14px; font-weight: 500; border-radius: 6px; }
+    .btn-label-secondary { background-color: transparent; border: 1px solid #d9d9e3; color: #666; padding: 8px 20px; font-size: 14px; font-weight: 500; border-radius: 6px; }
+    .text-danger { color: #dc3545; font-size: 12px; margin-top: 4px; display: block; }
+</style>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public bool IsEditMode { get; set; }
+    [Parameter] public bool IsSaving { get; set; }
+    [Parameter] public FeatureFormModel FormModel { get; set; } = new();
+    [Parameter] public List<FeatureDto> ParentFeatures { get; set; } = new();
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback<FeatureFormModel> OnSubmit { get; set; }
+
+    private Guid? _currentFeatureId;
+
+    protected override void OnParametersSet()
+    {
+        _currentFeatureId = FormModel.Id;
+    }
+
+    private async Task HandleCancel() { if (!IsSaving) await OnCancel.InvokeAsync(); }
+    private async Task HandleValidSubmit() => await OnSubmit.InvokeAsync(FormModel);
+
+    public class FeatureFormModel
+    {
+        public Guid Id { get; set; }
+        
+        [Required(ErrorMessage = "Name is required")]
+        [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
+        public string Name { get; set; } = string.Empty;
+
+        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
+        public string? Description { get; set; }
+
+        public string? RouteUrl { get; set; }
+        public bool IsMainMenu { get; set; }
+        public Guid? ParentFeatureId { get; set; }
+        
+        [Required(ErrorMessage = "Display order is required")]
+        public int DisplayOrder { get; set; }
+        
+        [Required(ErrorMessage = "Level is required")]
+        public int Level { get; set; }
+        
+        public string? Icon { get; set; }
+    }
+}

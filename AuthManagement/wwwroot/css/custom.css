@@ -1,0 +1,640 @@
+/* ==========================================
+   VUEXY LAYOUT SYSTEM
+   ========================================== */
+
+:root {
+    --menu-width: 260px;
+    --menu-collapsed-width: 70px;
+    --navbar-height: 64px;
+}
+
+/* Base Layout */
+.layout-wrapper {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: stretch;
+    width: 100%;
+    min-height: 100vh;
+}
+
+.layout-container {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: stretch;
+    width: 100%;
+}
+
+/* ==========================================
+   SIDEBAR MENU
+   ========================================== */
+
+.layout-menu {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--menu-width);
+    z-index: 1040;
+    transition: width 0.3s ease, transform 0.3s ease;
+}
+
+body.layout-menu-collapsed .layout-menu {
+    width: var(--menu-collapsed-width);
+}
+
+/* ==========================================
+   LAYOUT PAGE (NAVBAR + CONTENT)
+   ========================================== */
+
+.layout-page {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: stretch;
+    flex-direction: column;
+    margin-left: var(--menu-width);
+    transition: margin-left 0.3s ease;
+    width: calc(100% - var(--menu-width));
+}
+
+body.layout-menu-collapsed .layout-page {
+    margin-left: var(--menu-collapsed-width);
+    width: calc(100% - var(--menu-collapsed-width));
+}
+
+/* ==========================================
+   NAVBAR (INSIDE LAYOUT-PAGE)
+   ========================================== */
+
+.layout-navbar {
+    position: relative;
+    width: 100%;
+    height: var(--navbar-height);
+    z-index: 1030;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: stretch;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* ==========================================
+   MENU ICON HIERARCHY - VUEXY EXACT STYLE
+   ========================================== */
+
+/* 
+CORRECT STRUCTURE (from vuexy):
+- Main Menu (top level) → Dynamic Icon (always visible)
+- Submenu (has menu-toggle) → Dynamic Icon ONLY (NO CIRCLE)
+- Page Link (no menu-toggle) → Small Circle ONLY (using SVG mask like vuexy)
+*/
+
+/* Step 1: Hide ALL icons in menu-sub by default */
+.menu-sub .menu-icon {
+    display: none !important;
+}
+
+/* Step 2: Show icons ONLY for submenu items with menu-toggle class */
+.menu-sub .menu-item > .menu-toggle .menu-icon {
+    display: inline-flex !important;
+}
+
+/* Step 3: CRITICAL - Explicitly hide ::before circles on menu-toggle items */
+.menu-sub .menu-item > .menu-link.menu-toggle::before {
+    display: none !important;
+    content: none !important;
+}
+
+/* Step 4: Add small circle ONLY for page links (items WITHOUT menu-toggle) - VUEXY EXACT STYLE */
+/* Note: Position and sizing defined in hierarchy spacing section below */
+
+/* Active page circle - use primary color */
+.menu-sub .menu-item.active > .menu-link:not(.menu-toggle)::before {
+    background-color: var(--bs-primary, #696cff);
+}
+
+/* Dark theme circles */
+[data-bs-theme="dark"] .menu-sub .menu-item > .menu-link:not(.menu-toggle)::before {
+    background-color: var(--bs-menu-color, #6f6b7d);
+}
+
+[data-bs-theme="dark"] .menu-sub .menu-item.active > .menu-link:not(.menu-toggle)::before {
+    background-color: var(--bs-primary, #696cff);
+}
+
+/* Hover state for circles */
+.menu-sub .menu-item > .menu-link:not(.menu-toggle):hover::before {
+    background-color: var(--bs-primary, #696cff);
+}
+
+/* Always show icons for main menu (top level) */
+.menu-inner > .menu-item > .menu-link .menu-icon {
+    display: inline-flex !important;
+}
+
+/* REMOVED BOLD - Use normal font weight for cleaner hierarchy */
+
+/* HIERARCHY SPACING - Page links need proper indentation */
+/* Third level (page links under submenu) - most indented */
+.menu-sub .menu-sub .menu-link {
+    padding-inline-start: 4.5rem !important;
+}
+
+/* Second level (submenu items or direct page links under main menu) */
+.menu-sub .menu-link {
+    padding-inline-start: 2.75rem !important;
+}
+
+/* Adjust circle position for proper alignment with indentation */
+.menu-sub .menu-item > .menu-link:not(.menu-toggle)::before {
+    position: absolute;
+    background-color: var(--bs-menu-color, #a8aaae);
+    content: "";
+    inset-inline-start: 1.75rem !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-size: 100% 100%;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100% 100%;
+    border-radius: 50%;
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+/* Deeper nested page links (third level) */
+.menu-sub .menu-sub .menu-item > .menu-link:not(.menu-toggle)::before {
+    inset-inline-start: 3.25rem !important;
+}
+
+/* ==========================================
+   MENU TEXT STYLING - NORMAL WEIGHT FOR CLEAR HIERARCHY
+   ========================================== */
+
+/* Main menu text - normal weight */
+.menu-inner > .menu-item > .menu-link > div {
+    font-weight: 400;
+}
+
+/* Submenu text - normal weight */
+.menu-sub .menu-item > .menu-link.menu-toggle > div {
+    font-weight: 400;
+}
+
+/* Page link text - normal weight */
+.menu-sub .menu-item > .menu-link:not(.menu-toggle) > div {
+    font-weight: 400;
+}
+
+/* ==========================================
+   MENU PIN/HOVER
+   ========================================== */
+
+.menu-toggle-icon {
+    transition: all 0.3s ease;
+    font-size: 1.25rem;
+}
+
+/* ==========================================
+   MOBILE LAYOUT
+   ========================================== */
+
+.layout-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1039;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    display: none;
+}
+
+body.layout-menu-expanded .layout-overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ==========================================
+   TOAST NOTIFICATIONS - MODERN DESIGN WITH PROGRESS BAR
+   ========================================== */
+
+.toast-container {
+    z-index: 9999 !important;
+}
+
+.toast {
+    animation: slideInRight 0.3s ease forwards;
+    background: white !important;
+    border: none !important;
+    position: relative;
+}
+
+@keyframes slideInRight {
+    0% {
+        transform: translateX(100%);
+    }
+    40% {
+        transform: translateX(-5%);
+    }
+    80% {
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(-10px);
+    }
+}
+
+/* Toast hide animation */
+.toast.hide {
+    animation: hideToast 0.3s ease forwards;
+}
+
+@keyframes hideToast {
+    0% {
+        transform: translateX(-10px);
+    }
+    40% {
+        transform: translateX(0%);
+    }
+    80% {
+        transform: translateX(-5%);
+    }
+    100% {
+        transform: translateX(calc(100% + 20px));
+    }
+}
+
+/* Progress bar at bottom of toast */
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    animation: toastProgress 5s linear forwards;
+}
+
+@keyframes toastProgress {
+    100% {
+        width: 0%;
+    }
+}
+
+/* Toast type colors for progress bar */
+.progress-success {
+    background: #0abf30;
+}
+
+.progress-error {
+    background: #f24d4c;
+}
+
+.progress-warning {
+    background: #e9bd0c;
+}
+
+.progress-info {
+    background: #3498db;
+}
+
+/* FontAwesome icon colors */
+.text-success-toast {
+    color: #0abf30 !important;
+}
+
+.text-error-toast {
+    color: #f24d4c !important;
+}
+
+.text-warning-toast {
+    color: #e9bd0c !important;
+}
+
+.text-info-toast {
+    color: #3498db !important;
+}
+
+/* Close icon hover effect */
+.toast i.fa-xmark:hover {
+    color: #34495e !important;
+}
+
+/* Shadow for toast */
+.shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Dark theme adjustments */
+[data-bs-theme="dark"] .toast {
+    background: #2c3e50 !important;
+}
+
+[data-bs-theme="dark"] .toast span {
+    color: #ecf0f1 !important;
+}
+
+/* ==========================================
+   PASSWORD TOGGLE
+   ========================================== */
+
+.form-password-toggle .input-group-text {
+    background-color: transparent;
+    border-left: 0;
+    cursor: pointer;
+}
+
+.form-password-toggle .form-control {
+    border-right: 0;
+}
+
+.form-password-toggle .form-control:focus + .input-group-text {
+    border-color: #696cff;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* ==========================================
+   AUTH PAGES
+   ========================================== */
+
+.authentication-wrapper.authentication-cover {
+    min-height: 100vh;
+}
+
+.authentication-cover .authentication-inner {
+    min-height: 100vh;
+}
+
+.auth-cover-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* ==========================================
+   LOADING OVERLAY
+   ========================================== */
+
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+[data-bs-theme="dark"] .loading {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 1199.98px) {
+    /* Mobile: Off-canvas menu */
+    .layout-menu {
+        transform: translateX(-100%);
+    }
+    
+    body.layout-menu-expanded .layout-menu {
+        transform: translateX(0);
+    }
+    
+    .layout-page {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    .layout-overlay {
+        display: block;
+    }
+}
+
+@media (min-width: 1200px) {
+    .layout-overlay {
+        display: none !important;
+    }
+}
+
+/* ==========================================
+   VUEXY THEME ENHANCEMENTS
+   ========================================== */
+
+/* Smooth transitions for all menu interactions */
+.menu-item,
+.menu-link,
+.menu-sub {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Menu link hover effects */
+.menu-link:hover {
+    transform: translateX(2px);
+}
+
+.menu-sub .menu-link:hover {
+    transform: translateX(4px);
+}
+
+/* Icon animations */
+.menu-icon {
+    transition: transform 0.2s ease-in-out;
+}
+
+.menu-link:hover .menu-icon {
+    transform: scale(1.1);
+}
+
+/* Active menu item highlight */
+.menu-item.active > .menu-link {
+    background-color: rgba(105, 108, 255, 0.08);
+}
+
+[data-bs-theme="dark"] .menu-item.active > .menu-link {
+    background-color: rgba(105, 108, 255, 0.12);
+}
+
+/* Badge styling */
+.menu-link .badge {
+    transition: all 0.2s ease-in-out;
+}
+
+.menu-link:hover .badge {
+    transform: scale(1.05);
+}
+
+/* Perfect scrollbar styling */
+.menu-inner .ps__rail-y {
+    width: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.menu-inner:hover .ps__rail-y {
+    opacity: 1;
+}
+
+.menu-inner .ps__thumb-y {
+    background-color: rgba(105, 108, 255, 0.3);
+    width: 4px;
+}
+
+/* Menu header styling */
+.menu-header {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #a8aaae;
+    font-weight: 600;
+}
+
+[data-bs-theme="dark"] .menu-header {
+    color: #6f6b7d;
+}
+
+/* Improved button focus states */
+.btn:focus,
+.btn-close:focus {
+    box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.25);
+}
+
+/* Card shadow enhancements */
+.card {
+    box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.12);
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px 0 rgba(67, 89, 113, 0.18);
+}
+
+[data-bs-theme="dark"] .card {
+    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.4);
+}
+
+[data-bs-theme="dark"] .card:hover {
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* Form control enhancements */
+.form-control:focus,
+.form-select:focus {
+    border-color: #696cff;
+    box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.25);
+}
+
+/* Loading spinner enhancement */
+.spinner-border {
+    animation: spinner-border 0.75s linear infinite;
+}
+
+/* Table hover effects */
+.table-hover tbody tr:hover {
+    background-color: rgba(105, 108, 255, 0.04);
+}
+
+[data-bs-theme="dark"] .table-hover tbody tr:hover {
+    background-color: rgba(105, 108, 255, 0.08);
+}
+
+/* Smooth page transitions */
+.content-wrapper {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Menu toggle icon animation */
+.menu-toggle-icon {
+    transition: transform 0.3s ease-in-out;
+}
+
+.menu-item.open > .menu-link .menu-toggle-icon {
+    transform: rotate(90deg);
+}
+
+/* Navbar enhancements */
+.navbar {
+    box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.12);
+}
+
+[data-bs-theme="dark"] .navbar {
+    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Dropdown menu styling */
+.dropdown-menu {
+    box-shadow: 0 4px 12px rgba(67, 89, 113, 0.16);
+    border: none;
+    animation: dropdownFadeIn 0.2s ease-in;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+[data-bs-theme="dark"] .dropdown-menu {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* Icon sizing utilities */
+.icon-sm {
+    font-size: 1rem;
+}
+
+.icon-md {
+    font-size: 1.5rem;
+}
+
+.icon-lg {
+    font-size: 2rem;
+}
+
+.icon-xl {
+    font-size: 2.5rem;
+}
+
+/* Ensure all Tabler icons render correctly */
+.ti,
+.icon-base {
+    font-family: 'tabler-icons' !important;
+    speak: never;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}

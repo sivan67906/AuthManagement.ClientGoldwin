@@ -1,0 +1,969 @@
+@page "/department"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@using AuthManagement.Shared
+@inject RBACService RBACService
+@inject PermissionService PermissionService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<Department> Logger
+@inject ISnackbar Snackbar
+@attribute [Authorize]
+
+<PageTitle>Department Management</PageTitle>
+
+<style>
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        /* margin-bottom: 16px; */
+        padding-bottom: 0;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #666;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .breadcrumb-separator {
+        color: #999;
+    }
+
+    .breadcrumb-link {
+        color: #7c3aed;
+        text-decoration: none;
+    }
+
+    .breadcrumb-link:hover {
+        text-decoration: underline;
+    }
+
+    .breadcrumb-current {
+        color: #666;
+    }
+
+    /* Container */
+    .department-container {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    /* Toolbar */
+    .toolbar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        background: white;
+        border-bottom: 1px solid #f0f0f0;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .toolbar-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .departments-list-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-left: auto;
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 280px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        border: 1px solid #d9d9e3;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 18px;
+    }
+
+    .add-button {
+        background-color: #7c3aed;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background-color 0.2s;
+        white-space: nowrap;
+    }
+
+    .add-button:hover {
+        background-color: #6d28d9;
+    }
+
+    .add-button i {
+        font-size: 18px;
+    }
+
+    /* Table */
+    .department-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .department-table thead {
+        background-color: #fafafa;
+    }
+
+    .department-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 13px;
+        /* color: #666; */
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        user-select: none;
+        color: black;
+        background: white;
+    }
+
+    .department-table th:last-child {
+        border-right: none;
+    }
+
+    .department-table th.sortable {
+        position: relative;
+        padding-right: 30px;
+    }
+
+    .department-table th.sortable:hover {
+        /* background-color: #f5f5f5; */
+    }
+
+    .sort-indicator {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .sort-arrow {
+        width: 0;
+        height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+    }
+
+    .sort-arrow.up {
+        border-bottom: 5px solid #ccc;
+    }
+
+    .sort-arrow.up.active {
+        border-bottom-color: #7c3aed;
+    }
+
+    .sort-arrow.down {
+        border-top: 5px solid #ccc;
+    }
+
+    .sort-arrow.down.active {
+        border-top-color: #7c3aed;
+    }
+
+    .department-table th.text-center {
+        text-align: center;
+    }
+
+    .department-table tbody tr {
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .department-table tbody tr:hover {
+        /* background-color: #f8f9fa; */
+    }
+
+    .department-table td {
+        padding: 10px 16px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .department-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .serial-number {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .department-name {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .description-text {
+        color: #666;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: #f5f5f5;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        color: #666;
+        font-size: 18px;
+    }
+
+    .action-btn i {
+        font-size: 18px;
+        display: block;
+        line-height: 1;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .action-btn.view-btn {
+        background-color: #e3f2fd;
+        color: #2196f3;
+    }
+
+    .action-btn.view-btn:hover {
+        background-color: #2196f3;
+        color: white;
+    }
+
+    .action-btn.edit-btn {
+        background-color: #fff3e0;
+        color: #ff9800;
+    }
+
+    .action-btn.edit-btn:hover {
+        background-color: #ff9800;
+        color: white;
+    }
+
+    .action-btn.delete-btn {
+        background-color: #ffebee;
+        color: #dc3545;
+    }
+
+    .action-btn.delete-btn:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+        background: white;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .pagination-info {
+        color: #666;
+        font-size: 13px;
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+    }
+
+    .page-button {
+        min-width: 32px;
+        height: 32px;
+        border: 1px solid #e0e0e0;
+        background-color: white;
+        color: #666;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .page-button i {
+        font-size: 16px;
+    }
+
+    .page-button:hover:not(:disabled) {
+        background-color: #f5f5f5;
+        border-color: #7c3aed;
+    }
+
+    .page-button.active {
+        background-color: #7c3aed !important;
+        color: white !important;
+        border-color: #7c3aed !important;
+    }
+
+    .page-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* No Data */
+    .no-data {
+        text-align: center;
+        padding: 60px 20px;
+        color: #999;
+    }
+
+    .no-data i {
+        font-size: 48px;
+        opacity: 0.3;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .toolbar-container {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .toolbar-left,
+        .toolbar-right {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .search-box {
+            min-width: 100%;
+        }
+    }
+</style>
+
+<div class="container-fluid" style="">
+    @if (_isLoading)
+    {
+        <LoadingSpinner FullPage="true" />
+    }
+    else if (_hasError)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled">
+            @_errorMessage
+        </MudAlert>
+    }
+    else
+    {
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Departments List</h1>
+            <nav>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="#" class="breadcrumb-link">Home</a>
+                        <span class="breadcrumb-separator">></span>
+                    </li>
+                    <li class="">
+                        <span class="breadcrumb-current">Departments List</span>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Data Grid -->
+        <div class="department-container">
+            <!-- Toolbar -->
+            <div class="toolbar-container">
+                <div class="toolbar-left">
+                    <span class="departments-list-label">DEPARTMENTS LIST</span>
+                </div>
+                
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <i class="ti tabler-search search-icon"></i>
+                        <input type="text" 
+                               class="search-input" 
+                               placeholder="Search Department" 
+                               value="@_searchString"
+                               @oninput="@((ChangeEventArgs e) => OnSearchChanged(e.Value?.ToString() ?? string.Empty))" />
+                    </div>
+                    @if (_canAdd)
+                    {
+                        <button class="add-button" @onclick="OpenAddDialog">
+                            <i class="ti tabler-plus"></i>
+                            <span>Add Department</span>
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div style="overflow-x: auto;">
+                <table class="department-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;" class="sortable" @onclick='() => ToggleSort("no")'>
+                                #
+                                <span class="sort-indicator">
+                                    <span class="sort-arrow up @(_sortColumn == "no" && _sortDirection == "asc" ? "active" : "")"></span>
+                                    <span class="sort-arrow down @(_sortColumn == "no" && _sortDirection == "desc" ? "active" : "")"></span>
+                                </span>
+                            </th>
+                            <th class="sortable" @onclick='() => ToggleSort("name")'>
+                                NAME
+                                <span class="sort-indicator">
+                                    <span class="sort-arrow up @(_sortColumn == "name" && _sortDirection == "asc" ? "active" : "")"></span>
+                                    <span class="sort-arrow down @(_sortColumn == "name" && _sortDirection == "desc" ? "active" : "")"></span>
+                                </span>
+                            </th>
+                            <th class="sortable" @onclick='() => ToggleSort("description")'>
+                                DESCRIPTION
+                                <span class="sort-indicator">
+                                    <span class="sort-arrow up @(_sortColumn == "description" && _sortDirection == "asc" ? "active" : "")"></span>
+                                    <span class="sort-arrow down @(_sortColumn == "description" && _sortDirection == "desc" ? "active" : "")"></span>
+                                </span>
+                            </th>
+                            <th class="text-center" style="width: 140px;">
+                                ACTIONS
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (_pagedDepartments.Any())
+                        {
+                            @foreach (var department in _pagedDepartments)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="serial-number">@GetGlobalSerialNumber(department)</span>
+                                    </td>
+                                    <td>
+                                        <span class="department-name">@department.Name</span>
+                                    </td>
+                                    <td>
+                                        <span class="description-text">@TruncateDescription(department.Description)</span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            @if (_canView)
+                                            {
+                                                <button class="action-btn view-btn" 
+                                                        @onclick="@(() => OpenViewDialog(department))"
+                                                        title="View">
+                                                    <i class="ti tabler-eye"></i>
+                                                </button>
+                                            }
+                                            @if (_canEdit)
+                                            {
+                                                <button class="action-btn edit-btn" 
+                                                        @onclick="@(() => OpenEditDialog(department))"
+                                                        title="Edit">
+                                                    <i class="ti tabler-edit"></i>
+                                                </button>
+                                            }
+                                            @if (_canDelete)
+                                            {
+                                                <button class="action-btn delete-btn" 
+                                                        @onclick="@(() => DeleteDepartment(department))"
+                                                        title="Delete">
+                                                    <i class="ti tabler-trash"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4">
+                                    <div class="no-data">
+                                        <i class="ti tabler-folder-off"></i>
+                                        <p style="margin-top: 12px; font-size: 14px;">No departments found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
+                </div>
+                <div class="pagination-controls">
+                    <button class="page-button" 
+                            @onclick="() => GoToPage(1)" 
+                            disabled="@(_currentPage == 1)">
+                        <i class="ti tabler-chevrons-left"></i>
+                    </button>
+                    <button class="page-button" 
+                            @onclick="() => GoToPage(_currentPage - 1)" 
+                            disabled="@(_currentPage == 1)">
+                        <i class="ti tabler-chevron-left"></i>
+                    </button>
+                    
+                    @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                    {
+                        var pageItem = i;
+                        <button class="page-button @(_currentPage == pageItem ? "active" : "")"
+                                @onclick="() => GoToPage(pageItem)">
+                            @pageItem
+                        </button>
+                    }
+                    
+                    <button class="page-button" 
+                            @onclick="() => GoToPage(_currentPage + 1)" 
+                            disabled="@(_currentPage == _totalPages)">
+                        <i class="ti tabler-chevron-right"></i>
+                    </button>
+                    <button class="page-button" 
+                            @onclick="() => GoToPage(_totalPages)" 
+                            disabled="@(_currentPage == _totalPages)">
+                        <i class="ti tabler-chevrons-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Department Form Dialog -->
+<DepartmentFormDialog IsOpen="_isDialogOpen"
+                     IsEditMode="_isEditMode"
+                     IsSaving="_isSaving"
+                     FormModel="_departmentModel"
+                     OnCancel="CloseDialog"
+                     OnSubmit="HandleSubmit" />
+
+<!-- Department Details Offcanvas -->
+<DepartmentDetailsOffcanvas IsOpen="_isOffcanvasOpen"
+                           Department="_selectedDepartment"
+                           OnClose="CloseOffcanvas" />
+
+@code {
+    private List<DepartmentDto> _departments = new();
+    private List<DepartmentDto> _filteredDepartments = new();
+    private List<DepartmentDto> _pagedDepartments = new();
+    private DepartmentDto? _selectedDepartment;
+    private DepartmentFormDialog.DepartmentFormModel _departmentModel = new();
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private bool _isDialogOpen = false;
+    private bool _isOffcanvasOpen = false;
+    private bool _isEditMode = false;
+    private bool _hasError = false;
+    private string _errorMessage = string.Empty;
+    private string _searchString = string.Empty;
+    private string _sortColumn = "name";
+    private string _sortDirection = "asc";
+
+    // Pagination
+    private int _currentPage = 1;
+    private int _pageSize = 10;
+    private int _totalPages = 1;
+    private int _totalItems = 0;
+
+    // Permission flags
+    private bool _canView = false;
+    private bool _canAdd = false;
+    private bool _canEdit = false;
+    private bool _canDelete = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Logger.LogInformation("Department page initializing...");
+
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (!authState.User.Identity?.IsAuthenticated ?? true)
+            {
+                Logger.LogWarning("User not authenticated, redirecting to login");
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            var permissions = await PermissionService.GetPagePermissionsAsync("/department");
+            _canView = permissions.CanView;
+            _canAdd = permissions.CanAdd;
+            _canEdit = permissions.CanEdit;
+            _canDelete = permissions.CanDelete;
+
+            Logger.LogInformation("Permissions set - View: {View}, Add: {Add}, Edit: {Edit}, Delete: {Delete}",
+                _canView, _canAdd, _canEdit, _canDelete);
+
+            await LoadDepartments();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing Department page");
+            _hasError = true;
+            _errorMessage = $"Error initializing page: {ex.Message}";
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadDepartments()
+    {
+        _isLoading = true;
+        _hasError = false;
+
+        try
+        {
+            Logger.LogInformation("Loading departments...");
+            var response = await RBACService.GetAllDepartmentsAsync();
+
+            if (response.Success && response.Data != null)
+            {
+                _departments = response.Data;
+                Logger.LogInformation("Loaded {Count} departments", _departments.Count);
+                UpdateFilteredDepartments();
+            }
+            else
+            {
+                _hasError = true;
+                _errorMessage = response.Message ?? "Failed to load departments";
+                Logger.LogWarning("Failed to load departments: {Message}", _errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading departments");
+            _hasError = true;
+            _errorMessage = $"Error loading departments: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void UpdateFilteredDepartments()
+    {
+        // Filter
+        if (string.IsNullOrWhiteSpace(_searchString))
+        {
+            _filteredDepartments = _departments.ToList();
+        }
+        else
+        {
+            _filteredDepartments = _departments
+                .Where(d => FilterFunc(d))
+                .ToList();
+        }
+
+        // Sort - Fixed: Removed invalid lambda syntax with two parameters
+        _filteredDepartments = (_sortColumn, _sortDirection) switch
+        {
+            ("no", "asc") => _filteredDepartments.OrderBy(d => _departments.IndexOf(d)).ToList(),
+            ("no", "desc") => _filteredDepartments.OrderByDescending(d => _departments.IndexOf(d)).ToList(),
+            ("name", "asc") => _filteredDepartments.OrderBy(d => d.Name).ToList(),
+            ("name", "desc") => _filteredDepartments.OrderByDescending(d => d.Name).ToList(),
+            ("description", "asc") => _filteredDepartments.OrderBy(d => d.Description ?? string.Empty).ToList(),
+            ("description", "desc") => _filteredDepartments.OrderByDescending(d => d.Description ?? string.Empty).ToList(),
+            _ => _filteredDepartments.OrderBy(d => d.Name).ToList()
+        };
+
+        _totalItems = _filteredDepartments.Count;
+        _totalPages = _totalItems > 0 ? (int)Math.Ceiling((double)_totalItems / _pageSize) : 1;
+
+        if (_currentPage > _totalPages)
+        {
+            _currentPage = _totalPages;
+        }
+        if (_currentPage < 1)
+        {
+            _currentPage = 1;
+        }
+
+        _pagedDepartments = _filteredDepartments
+            .Skip((_currentPage - 1) * _pageSize)
+            .Take(_pageSize)
+            .ToList();
+    }
+
+    private void OnSearchChanged(string value)
+    {
+        _searchString = value;
+        _currentPage = 1;
+        UpdateFilteredDepartments();
+        StateHasChanged();
+    }
+
+    private void ToggleSort(string column)
+    {
+        if (_sortColumn == column)
+        {
+            _sortDirection = _sortDirection == "asc" ? "desc" : "asc";
+        }
+        else
+        {
+            _sortColumn = column;
+            _sortDirection = "asc";
+        }
+        UpdateFilteredDepartments();
+        StateHasChanged();
+    }
+
+    private bool FilterFunc(DepartmentDto department)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        var searchLower = _searchString.ToLower();
+        return department.Name.ToLower().Contains(searchLower) ||
+               (department.Description?.ToLower().Contains(searchLower) ?? false);
+    }
+
+    private int GetGlobalSerialNumber(DepartmentDto department)
+    {
+        var index = _filteredDepartments.IndexOf(department);
+        return index + 1;
+    }
+
+    private string TruncateDescription(string? description)
+    {
+        if (string.IsNullOrEmpty(description))
+            return "-";
+
+        if (description.Length <= 50)
+            return description;
+
+        return description.Substring(0, 50) + "...";
+    }
+
+    private int GetStartRecord()
+    {
+        return _totalItems > 0 ? (_currentPage - 1) * _pageSize + 1 : 0;
+    }
+
+    private int GetEndRecord()
+    {
+        return Math.Min(_currentPage * _pageSize, _totalItems);
+    }
+
+    private int GetStartPage()
+    {
+        return Math.Max(1, _currentPage - 2);
+    }
+
+    private int GetEndPage()
+    {
+        return Math.Min(_totalPages, _currentPage + 2);
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page >= 1 && page <= _totalPages)
+        {
+            _currentPage = page;
+            UpdateFilteredDepartments();
+            StateHasChanged();
+        }
+    }
+
+    private void OpenAddDialog()
+    {
+        _selectedDepartment = null;
+        _isEditMode = false;
+        _departmentModel = new DepartmentFormDialog.DepartmentFormModel();
+        _isDialogOpen = true;
+    }
+
+    private void OpenEditDialog(DepartmentDto department)
+    {
+        _selectedDepartment = department;
+        _isEditMode = true;
+        _departmentModel = new DepartmentFormDialog.DepartmentFormModel
+            {
+                Name = department.Name,
+                Description = department.Description
+            };
+        _isDialogOpen = true;
+    }
+
+    private void OpenViewDialog(DepartmentDto department)
+    {
+        _selectedDepartment = department;
+        _isOffcanvasOpen = true;
+    }
+
+    private void CloseDialog()
+    {
+        _isDialogOpen = false;
+        _selectedDepartment = null;
+        _departmentModel = new DepartmentFormDialog.DepartmentFormModel();
+        _isEditMode = false;
+    }
+
+    private void CloseOffcanvas()
+    {
+        _isOffcanvasOpen = false;
+        _selectedDepartment = null;
+    }
+
+    private async Task HandleSubmit(DepartmentFormDialog.DepartmentFormModel model)
+    {
+        _isSaving = true;
+        try
+        {
+            if (_isEditMode && _selectedDepartment != null)
+            {
+                var updateRequest = new UpdateDepartmentRequest
+                    {
+                        Id = _selectedDepartment.Id,
+                        Name = model.Name,
+                        Description = model.Description
+                    };
+
+                var response = await RBACService.UpdateDepartmentAsync(_selectedDepartment.Id, updateRequest);
+                if (response.Success)
+                {
+                    Snackbar.Add("Department updated successfully", Severity.Success);
+                    await LoadDepartments();
+                    CloseDialog();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to update department", Severity.Error);
+                }
+            }
+            else
+            {
+                var createRequest = new CreateDepartmentRequest
+                    {
+                        Name = model.Name,
+                        Description = model.Description
+                    };
+
+                var response = await RBACService.CreateDepartmentAsync(createRequest);
+                if (response.Success)
+                {
+                    Snackbar.Add("Department created successfully", Severity.Success);
+                    await LoadDepartments();
+                    CloseDialog();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to create department", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error saving department");
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task DeleteDepartment(DepartmentDto department)
+    {
+        try
+        {
+            var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation",
+                "Delete Department",
+                $"Are you sure you want to delete '{department.Name}'? This action cannot be undone.");
+
+            if (confirmed)
+            {
+                var response = await RBACService.DeleteDepartmentAsync(department.Id);
+                if (response.Success)
+                {
+                    Snackbar.Add("Department deleted successfully", Severity.Success);
+                    await LoadDepartments();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to delete department", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting department");
+            Snackbar.Add($"Error deleting department: {ex.Message}", Severity.Error);
+        }
+    }
+}

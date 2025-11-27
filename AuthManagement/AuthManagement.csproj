@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<BlazorWebAssemblyEnableDebugging>true</BlazorWebAssemblyEnableDebugging>
+		<DebugType>portable</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Pages\Departments\**" />
+	  <Compile Remove="Pages\Features\**" />
+	  <Compile Remove="Pages\HR\**" />
+	  <Compile Remove="Pages\Mappings\**" />
+	  <Compile Remove="Pages\Pages\**" />
+	  <Compile Remove="Pages\Permissions\**" />
+	  <Compile Remove="Pages\RBAC\**" />
+	  <Compile Remove="Pages\RoleHierarchyMappings\**" />
+	  <Compile Remove="Pages\Roles\**" />
+	  <Compile Remove="Pages\UserRoleMappings\**" />
+	  <Compile Remove="Pages\Users\**" />
+	  <Content Remove="Pages\Departments\**" />
+	  <Content Remove="Pages\Features\**" />
+	  <Content Remove="Pages\HR\**" />
+	  <Content Remove="Pages\Mappings\**" />
+	  <Content Remove="Pages\Pages\**" />
+	  <Content Remove="Pages\Permissions\**" />
+	  <Content Remove="Pages\RBAC\**" />
+	  <Content Remove="Pages\RoleHierarchyMappings\**" />
+	  <Content Remove="Pages\Roles\**" />
+	  <Content Remove="Pages\UserRoleMappings\**" />
+	  <Content Remove="Pages\Users\**" />
+	  <EmbeddedResource Remove="Pages\Departments\**" />
+	  <EmbeddedResource Remove="Pages\Features\**" />
+	  <EmbeddedResource Remove="Pages\HR\**" />
+	  <EmbeddedResource Remove="Pages\Mappings\**" />
+	  <EmbeddedResource Remove="Pages\Pages\**" />
+	  <EmbeddedResource Remove="Pages\Permissions\**" />
+	  <EmbeddedResource Remove="Pages\RBAC\**" />
+	  <EmbeddedResource Remove="Pages\RoleHierarchyMappings\**" />
+	  <EmbeddedResource Remove="Pages\Roles\**" />
+	  <EmbeddedResource Remove="Pages\UserRoleMappings\**" />
+	  <EmbeddedResource Remove="Pages\Users\**" />
+	  <None Remove="Pages\Departments\**" />
+	  <None Remove="Pages\Features\**" />
+	  <None Remove="Pages\HR\**" />
+	  <None Remove="Pages\Mappings\**" />
+	  <None Remove="Pages\Pages\**" />
+	  <None Remove="Pages\Permissions\**" />
+	  <None Remove="Pages\RBAC\**" />
+	  <None Remove="Pages\RoleHierarchyMappings\**" />
+	  <None Remove="Pages\Roles\**" />
+	  <None Remove="Pages\UserRoleMappings\**" />
+	  <None Remove="Pages\Users\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
+		<PackageReference Include="Microsoft.Extensions.Http" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+		<PackageReference Include="MudBlazor" />
+	</ItemGroup>
+</Project>

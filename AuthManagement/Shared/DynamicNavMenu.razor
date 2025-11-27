@@ -1,0 +1,447 @@
+@inject NavigationService NavService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<DynamicNavMenu> Logger
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+    <div class="app-brand demo">
+        <a href="/" class="app-brand-link">
+            <span class="app-brand-logo demo">
+                <span class="text-primary">
+                    <svg width="32" height="22" viewBox="0 0 32 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z" fill="currentColor"></path>
+                        <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd" d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616"></path>
+                        <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd" d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616"></path>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z" fill="currentColor"></path>
+                    </svg>
+                </span>
+            </span>
+            <span class="app-brand-text demo menu-text fw-bold ms-3">Auth System</span>
+        </a>
+
+        <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto" @onclick="ToggleMenuPin" id="menu-toggle-icon">
+            <i class="icon-base ti ti-circle menu-toggle-icon align-middle"></i>
+        </a>
+    </div>
+
+    <div class="menu-inner-shadow"></div>
+
+    <ul class="menu-inner py-1">
+        <AuthorizeView>
+            <Authorized>
+                @if (_isLoadingNav)
+                {
+                    <li class="menu-item">
+                        <div class="menu-link">
+                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span>Loading navigation...</span>
+                        </div>
+                    </li>
+                }
+                else if (NavService.IsLoaded && NavService.NavigationTree.Any())
+                {
+                    @foreach (var mainMenu in NavService.NavigationTree)
+                    {
+                        @if (mainMenu.Children.Any())
+                        {
+                            <!-- Main Menu with children - HAS menu-toggle class and dynamic icon -->
+                            <li class="menu-item @(IsMenuOpen(mainMenu.Id) ? "open" : "")">
+                                <a href="javascript:void(0);" class="menu-link menu-toggle" @onclick="() => ToggleMenu(mainMenu.Id)">
+                                    <i class="menu-icon icon-base ti @GetIconClass(mainMenu.Icon)"></i>
+                                    <div data-i18n="@mainMenu.Title">@mainMenu.Title</div>
+                                    @if (GetMenuPageCount(mainMenu) > 0)
+                                    {
+                                        <div class="badge text-bg-primary rounded-pill ms-auto">@GetMenuPageCount(mainMenu)</div>
+                                    }
+                                </a>
+                                <ul class="menu-sub">
+                                    @foreach (var child in mainMenu.Children)
+                                    {
+                                        @if (!string.IsNullOrEmpty(child.Url))
+                                        {
+                                            <!-- Direct page link - NO icon, NO menu-toggle class -->
+                                            <!-- Circle will be added via CSS ::before -->
+                                            <li class="menu-item @(IsActivePage(child.Url) ? "active" : "")">
+                                                <a href="@child.Url" class="menu-link" @onclick="() => NavigateToPage(child.Url)" @onclick:preventDefault="true">
+                                                    <div data-i18n="@child.Title">@child.Title</div>
+                                                </a>
+                                            </li>
+                                        }
+                                        else if (child.Children.Any())
+                                        {
+                                            <!-- Submenu with children - HAS menu-toggle class and dynamic icon -->
+                                            <li class="menu-item @(IsMenuOpen(child.Id) ? "open" : "")">
+                                                <a href="javascript:void(0);" class="menu-link menu-toggle" @onclick="() => ToggleMenu(child.Id)">
+                                                    <i class="menu-icon icon-base ti @GetIconClass(child.Icon)"></i>
+                                                    <div data-i18n="@child.Title">@child.Title</div>
+                                                </a>
+                                                <ul class="menu-sub">
+                                                    @foreach (var pageItem in child.Children)
+                                                    {
+                                                        <!-- Page link - NO icon, NO menu-toggle class -->
+                                                        <!-- Circle will be added via CSS ::before -->
+                                                        <li class="menu-item @(IsActivePage(pageItem.Url) ? "active" : "")">
+                                                            <a href="@pageItem.Url" class="menu-link" @onclick="() => NavigateToPage(pageItem.Url)" @onclick:preventDefault="true">
+                                                                <div data-i18n="@pageItem.Title">@pageItem.Title</div>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </li>
+                                        }
+                                    }
+                                </ul>
+                            </li>
+                        }
+                        else if (!string.IsNullOrEmpty(mainMenu.Url))
+                        {
+                            <!-- Direct menu link - HAS dynamic icon, NO menu-toggle -->
+                            <li class="menu-item @(IsActivePage(mainMenu.Url) ? "active" : "")">
+                                <a href="@mainMenu.Url" class="menu-link" @onclick="() => NavigateToPage(mainMenu.Url)" @onclick:preventDefault="true">
+                                    <i class="menu-icon icon-base ti @GetIconClass(mainMenu.Icon)"></i>
+                                    <div data-i18n="@mainMenu.Title">@mainMenu.Title</div>
+                                </a>
+                            </li>
+                        }
+                    }
+                }
+                else
+                {
+                    <li class="menu-item">
+                        <div class="menu-link text-danger">
+                            <i class="menu-icon icon-base ti tabler-alert-triangle"></i>
+                            <span>Failed to load navigation</span>
+                        </div>
+                    </li>
+                    <li class="menu-item">
+                        <a href="javascript:void(0);" class="menu-link" @onclick="RetryLoadNavigation">
+                            <i class="menu-icon icon-base ti tabler-refresh"></i>
+                            <span>Retry</span>
+                        </a>
+                    </li>
+                }
+            </Authorized>
+            <NotAuthorized>
+                <li class="menu-item">
+                    <a href="/login" class="menu-link">
+                        <i class="menu-icon icon-base ti tabler-login"></i>
+                        <div data-i18n="Login">Login</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/register" class="menu-link">
+                        <i class="menu-icon icon-base ti tabler-user-plus"></i>
+                        <div data-i18n="Register">Register</div>
+                    </a>
+                </li>
+            </NotAuthorized>
+        </AuthorizeView>
+    </ul>
+</aside>
+
+@code {
+    private bool _isLoadingNav = false;
+    private bool _isDisposed = false;
+    private HashSet<Guid> _openMenus = new HashSet<Guid>();
+    private bool _lastAuthState = false;
+    private DateTime _lastNavigationLoadAttempt = DateTime.MinValue;
+    private readonly TimeSpan _minimumLoadInterval = TimeSpan.FromMilliseconds(500);
+    private SemaphoreSlim _loadSemaphore = new SemaphoreSlim(1, 1);
+    private string _currentUrl = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        NavService.OnNavigationChanged += OnNavigationChanged;
+        Navigation.LocationChanged += OnLocationChanged;
+        _currentUrl = Navigation.Uri;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadNavigationIfAuthenticatedAsync();
+            
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("initMenuScrollbar");
+                await JSRuntime.InvokeVoidAsync("initMenuToggle");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error initializing menu");
+            }
+        }
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _currentUrl = e.Location;
+        StateHasChanged();
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        if (_isDisposed) return;
+        
+        try
+        {
+            var authState = await task;
+            var isAuthenticated = authState.User?.Identity?.IsAuthenticated ?? false;
+            
+            if (isAuthenticated != _lastAuthState)
+            {
+                _lastAuthState = isAuthenticated;
+                
+                if (isAuthenticated)
+                {
+                    await LoadNavigationIfAuthenticatedAsync();
+                }
+                else
+                {
+                    NavService.ClearNavigation();
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error handling auth state change");
+        }
+    }
+
+    private async Task LoadNavigationIfAuthenticatedAsync()
+    {
+        if (_isDisposed || _isLoadingNav) return;
+        
+        var timeSinceLastAttempt = DateTime.UtcNow - _lastNavigationLoadAttempt;
+        if (timeSinceLastAttempt < _minimumLoadInterval)
+        {
+            return;
+        }
+        
+        if (!await _loadSemaphore.WaitAsync(0))
+        {
+            return;
+        }
+        
+        try
+        {
+            _lastNavigationLoadAttempt = DateTime.UtcNow;
+            
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var isAuthenticated = authState.User?.Identity?.IsAuthenticated ?? false;
+            
+            if (!isAuthenticated || NavService.IsLoaded)
+            {
+                return;
+            }
+            
+            _isLoadingNav = true;
+            await InvokeAsync(StateHasChanged);
+            
+            try
+            {
+                await NavService.LoadNavigationAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error loading navigation");
+            }
+            finally
+            {
+                _isLoadingNav = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        finally
+        {
+            _loadSemaphore.Release();
+        }
+    }
+
+    private async Task RetryLoadNavigation()
+    {
+        NavService.ClearNavigation();
+        _lastNavigationLoadAttempt = DateTime.MinValue;
+        await LoadNavigationIfAuthenticatedAsync();
+    }
+
+    private void OnNavigationChanged()
+    {
+        if (_isDisposed) return;
+        StateHasChanged();
+    }
+
+    private void ToggleMenu(Guid menuId)
+    {
+        var clickedMenu = FindMenuById(menuId);
+        if (clickedMenu == null) return;
+
+        var parentLevel = GetParentLevel(menuId);
+        var menusAtSameLevel = GetMenusAtLevel(parentLevel);
+
+        if (_openMenus.Contains(menuId))
+        {
+            _openMenus.Remove(menuId);
+        }
+        else
+        {
+            foreach (var menu in menusAtSameLevel)
+            {
+                _openMenus.Remove(menu.Id);
+            }
+            _openMenus.Add(menuId);
+        }
+    }
+
+    private NavigationTreeNode? FindMenuById(Guid id)
+    {
+        foreach (var menu in NavService.NavigationTree)
+        {
+            if (menu.Id == id) return menu;
+            
+            var found = FindMenuInChildren(menu, id);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private NavigationTreeNode? FindMenuInChildren(NavigationTreeNode parent, Guid id)
+    {
+        foreach (var child in parent.Children)
+        {
+            if (child.Id == id) return child;
+            
+            var found = FindMenuInChildren(child, id);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private int GetParentLevel(Guid menuId)
+    {
+        return GetLevelRecursive(NavService.NavigationTree, menuId, 0);
+    }
+
+    private int GetLevelRecursive(List<NavigationTreeNode> nodes, Guid menuId, int currentLevel)
+    {
+        foreach (var node in nodes)
+        {
+            if (node.Id == menuId) return currentLevel;
+            
+            var childLevel = GetLevelRecursive(node.Children, menuId, currentLevel + 1);
+            if (childLevel >= 0) return childLevel;
+        }
+        return -1;
+    }
+
+    private List<NavigationTreeNode> GetMenusAtLevel(int level)
+    {
+        var result = new List<NavigationTreeNode>();
+        
+        if (level == 0)
+        {
+            return NavService.NavigationTree;
+        }
+        
+        CollectMenusAtLevel(NavService.NavigationTree, level, 0, result);
+        return result;
+    }
+
+    private void CollectMenusAtLevel(List<NavigationTreeNode> nodes, int targetLevel, int currentLevel, List<NavigationTreeNode> result)
+    {
+        if (currentLevel == targetLevel)
+        {
+            result.AddRange(nodes);
+            return;
+        }
+        
+        foreach (var node in nodes)
+        {
+            CollectMenusAtLevel(node.Children, targetLevel, currentLevel + 1, result);
+        }
+    }
+
+    private bool IsMenuOpen(Guid menuId) => _openMenus.Contains(menuId);
+
+    private bool IsActivePage(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return false;
+        
+        var currentUri = new Uri(_currentUrl);
+        var currentPath = currentUri.AbsolutePath.TrimEnd('/');
+        var menuPath = url.TrimEnd('/');
+        
+        return currentPath.Equals(menuPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private int GetMenuPageCount(NavigationTreeNode menu)
+    {
+        int count = 0;
+        foreach (var child in menu.Children)
+        {
+            if (!string.IsNullOrEmpty(child.Url)) count++;
+            count += GetMenuPageCount(child);
+        }
+        return count;
+    }
+
+    private string GetIconClass(string? icon)
+    {
+        if (string.IsNullOrEmpty(icon)) return "tabler-circle-dot";
+        
+        var iconLower = icon.ToLower();
+        
+        if (iconLower.Contains("dashboard") || iconLower.Contains("home")) return "tabler-smart-home";
+        if (iconLower.Contains("person") || iconLower.Contains("user")) return "tabler-users";
+        if (iconLower.Contains("security") || iconLower.Contains("shield")) return "tabler-shield-lock";
+        if (iconLower.Contains("settings") || iconLower.Contains("gear")) return "tabler-settings";
+        if (iconLower.Contains("description") || iconLower.Contains("file")) return "tabler-file-text";
+        if (iconLower.Contains("folder")) return "tabler-folder";
+        if (iconLower.Contains("role")) return "tabler-key";
+        if (iconLower.Contains("lock")) return "tabler-lock";
+        if (iconLower.Contains("map")) return "tabler-map";
+        if (iconLower.Contains("list")) return "tabler-list";
+        if (iconLower.Contains("permission")) return "tabler-lock-open";
+        if (iconLower.Contains("department")) return "tabler-building";
+        if (iconLower.Contains("feature")) return "tabler-sparkles";
+        if (iconLower.Contains("page")) return "tabler-file";
+        
+        return "tabler-circle-dot";
+    }
+
+    private void NavigateToPage(string? url)
+    {
+        if (!string.IsNullOrEmpty(url))
+        {
+            Navigation.NavigateTo(url);
+        }
+    }
+
+    private async Task ToggleMenuPin()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("toggleMenuPin");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error toggling menu pin");
+        }
+    }
+
+    public void Dispose()
+    {
+        _isDisposed = true;
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        NavService.OnNavigationChanged -= OnNavigationChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
+        _loadSemaphore?.Dispose();
+    }
+}

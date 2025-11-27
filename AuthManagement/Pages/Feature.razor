@@ -1,0 +1,299 @@
+@page "/feature"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@using AuthManagement.Shared
+@inject RBACService RBACService
+@inject PermissionService PermissionService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<Feature> Logger
+@inject ISnackbar Snackbar
+@attribute [Authorize]
+
+<PageTitle>Feature Management</PageTitle>
+
+<style>
+    .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0; }
+    .page-title { font-size: 22px; font-weight: 600; color: #333; margin: 0; }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; margin: 0; padding: 0; list-style: none; }
+    .breadcrumb-item { display: flex; align-items: center; gap: 8px; }
+    .breadcrumb-separator { color: #999; }
+    .breadcrumb-link { color: #7c3aed; text-decoration: none; }
+    .breadcrumb-link:hover { text-decoration: underline; }
+    .breadcrumb-current { color: #666; }
+    .feature-container { background: white; border-radius: 8px; overflow: hidden; }
+    .toolbar-container { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: white; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; gap: 16px; }
+    .toolbar-left { display: flex; align-items: center; }
+    .features-list-label { font-size: 14px; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.5px; }
+    .toolbar-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .search-box { position: relative; min-width: 280px; }
+    .search-input { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid #d9d9e3; border-radius: 6px; font-size: 14px; }
+    .search-input:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1); }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; font-size: 18px; }
+    .add-button { background-color: #7c3aed; color: white; border: none; padding: 8px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background-color 0.2s; white-space: nowrap; }
+    .add-button:hover { background-color: #6d28d9; }
+    .add-button i { font-size: 18px; }
+    .feature-table { width: 100%; border-collapse: collapse; }
+    .feature-table thead { background-color: #fafafa; }
+    .feature-table th { padding: 12px 16px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f0f0f0; cursor: pointer; user-select: none; color: black; background: white; }
+    .feature-table th:last-child { border-right: none; }
+    .feature-table th.text-center { text-align: center; }
+    .feature-table tbody tr { transition: background-color 0.2s; border-bottom: 1px solid #f8f9fa; }
+    .feature-table td { padding: 10px 16px; font-size: 14px; color: #333; }
+    .feature-table tbody tr:last-child { border-bottom: none; }
+    .serial-number { color: #666; font-weight: 500; }
+    .feature-name { color: #333; font-weight: 600; }
+    .description-text { color: #666; }
+    .action-buttons { display: flex; gap: 6px; justify-content: center; align-items: center; }
+    .action-btn { width: 32px; height: 32px; border: none; background: #f5f5f5; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: #666; font-size: 18px; }
+    .action-btn i { font-size: 18px; display: block; line-height: 1; }
+    .action-btn:hover { transform: translateY(-2px); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); }
+    .action-btn.view-btn { background-color: #e3f2fd; color: #2196f3; }
+    .action-btn.view-btn:hover { background-color: #2196f3; color: white; }
+    .action-btn.edit-btn { background-color: #fff3e0; color: #ff9800; }
+    .action-btn.edit-btn:hover { background-color: #ff9800; color: white; }
+    .action-btn.delete-btn { background-color: #ffebee; color: #f44336; }
+    .action-btn.delete-btn:hover { background-color: #f44336; color: white; }
+    .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: white; border-top: 1px solid #f0f0f0; }
+    .pagination-info { font-size: 14px; color: #666; }
+    .pagination-buttons { display: flex; gap: 8px; align-items: center; }
+    .page-btn { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid #d9d9e3; background: white; border-radius: 6px; cursor: pointer; font-size: 14px; color: #333; transition: all 0.2s; }
+    .page-btn:hover:not(:disabled) { border-color: #7c3aed; color: #7c3aed; }
+    .page-btn.active { background: #7c3aed; color: white; border-color: #7c3aed; }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .ellipsis { padding: 0 8px; color: #999; }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="page-header mb-3">
+        <div>
+            <h4 class="page-title">Feature Management</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="/" class="breadcrumb-link"><i class="ti ti-home"></i><span>Home</span></a>
+                        <span class="breadcrumb-separator">/</span>
+                    </li>
+                    <li class="breadcrumb-item breadcrumb-current">Features</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="feature-container">
+        <div class="toolbar-container">
+            <div class="toolbar-left">
+                <span class="features-list-label">Features List</span>
+            </div>
+            <div class="toolbar-right">
+                <div class="search-box">
+                    <i class="ti ti-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search features..."
+                           @bind-value="_searchString" @bind-value:event="oninput"
+                           @onkeyup="@(() => OnSearchChanged(_searchString))" />
+                </div>
+                @if (_canAdd)
+                {
+                    <button class="add-button" @onclick="OpenAddDialog">
+                        <i class="ti ti-plus"></i><span>Add Feature</span>
+                    </button>
+                }
+            </div>
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                <p class="mt-2">Loading features...</p>
+            </div>
+        }
+        else if (_hasError)
+        {
+            <div class="alert alert-danger m-3" role="alert"><i class="ti ti-alert-circle me-2"></i>@_errorMessage</div>
+        }
+        else if (_pagedFeatures != null && _pagedFeatures.Any())
+        {
+            <table class="feature-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">No.</th>
+                        <th @onclick="@(() => ToggleSort("name"))">Feature Name</th>
+                        <th @onclick="@(() => ToggleSort("description"))">Description</th>
+                        <th @onclick="@(() => ToggleSort("routeurl"))">Route</th>
+                        <th class="text-center" style="width: 100px;">Main Menu</th>
+                        <th class="text-center" style="width: 150px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var feature in _pagedFeatures)
+                    {
+                        <tr>
+                            <td class="serial-number">@GetGlobalSerialNumber(feature)</td>
+                            <td class="feature-name">@feature.Name</td>
+                            <td class="description-text">@TruncateDescription(feature.Description)</td>
+                            <td>@(feature.RouteUrl ?? "-")</td>
+                            <td class="text-center">
+                                <span class="badge @(feature.IsMainMenu ? "bg-success" : "bg-secondary")">
+                                    @(feature.IsMainMenu ? "Yes" : "No")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    @if (_canView)
+                                    {
+                                        <button class="action-btn view-btn" @onclick="@(() => OpenViewDialog(feature))" title="View"><i class="ti ti-eye"></i></button>
+                                    }
+                                    @if (_canEdit)
+                                    {
+                                        <button class="action-btn edit-btn" @onclick="@(() => OpenEditDialog(feature))" title="Edit"><i class="ti ti-edit"></i></button>
+                                    }
+                                    @if (_canDelete)
+                                    {
+                                        <button class="action-btn delete-btn" @onclick="@(() => DeleteFeature(feature))" title="Delete"><i class="ti ti-trash"></i></button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="pagination-container">
+                <div class="pagination-info">Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries</div>
+                <div class="pagination-buttons">
+                    <button class="page-btn" @onclick="@(() => GoToPage(1))" disabled="@(_currentPage == 1)"><i class="ti ti-chevrons-left"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage - 1))" disabled="@(_currentPage == 1)"><i class="ti ti-chevron-left"></i></button>
+                    @if (GetStartPage() > 1) { <span class="ellipsis">...</span> }
+                    @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                    {
+                        var pageNum = i;
+                        <button class="page-btn @(pageNum == _currentPage ? "active" : "")" @onclick="@(() => GoToPage(pageNum))">@pageNum</button>
+                    }
+                    @if (GetEndPage() < _totalPages) { <span class="ellipsis">...</span> }
+                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage + 1))" disabled="@(_currentPage >= _totalPages)"><i class="ti ti-chevron-right"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_totalPages))" disabled="@(_currentPage >= _totalPages)"><i class="ti ti-chevrons-right"></i></button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info m-3" role="alert"><i class="ti ti-info-circle me-2"></i>No features found.</div>
+        }
+    </div>
+</div>
+
+<FeatureFormDialog IsOpen="@_isDialogOpen" IsEditMode="@_isEditMode" IsSaving="@_isSaving" FormModel="@_featureModel" ParentFeatures="@_features" OnCancel="@CloseDialog" OnSubmit="@HandleSubmit" />
+<FeatureDetailsOffcanvas IsOpen="@_isOffcanvasOpen" Feature="@_selectedFeature" OnClose="@CloseOffcanvas" />
+
+@code {
+    private List<FeatureDto> _features = new();
+    private List<FeatureDto> _filteredFeatures = new();
+    private List<FeatureDto> _pagedFeatures = new();
+    private FeatureDto? _selectedFeature;
+    private FeatureFormDialog.FeatureFormModel _featureModel = new();
+    private bool _isLoading = true, _isSaving = false, _hasError = false, _isDialogOpen = false, _isOffcanvasOpen = false, _isEditMode = false;
+    private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "name", _sortDirection = "asc";
+    private int _currentPage = 1, _pageSize = 10, _totalItems = 0, _totalPages = 1;
+    private bool _canView, _canAdd, _canEdit, _canDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (!authState.User.Identity?.IsAuthenticated ?? true) { NavigationManager.NavigateTo("/login"); return; }
+            var permissions = await PermissionService.GetPagePermissionsAsync("/feature");
+            _canView = permissions.CanView; _canAdd = permissions.CanAdd; _canEdit = permissions.CanEdit; _canDelete = permissions.CanDelete;
+            await LoadFeatures();
+        }
+        catch (Exception ex) { Logger.LogError(ex, "Error initializing Feature page"); _hasError = true; _errorMessage = $"Error initializing page: {ex.Message}"; _isLoading = false; }
+    }
+
+    private async Task LoadFeatures()
+    {
+        _isLoading = true; _hasError = false;
+        try
+        {
+            var response = await RBACService.GetAllFeaturesAsync();
+            if (response.Success && response.Data != null) { _features = response.Data; UpdateFilteredFeatures(); }
+            else { _hasError = true; _errorMessage = response.Message ?? "Failed to load features"; }
+        }
+        catch (Exception ex) { Logger.LogError(ex, "Error loading features"); _hasError = true; _errorMessage = $"Error loading features: {ex.Message}"; }
+        finally { _isLoading = false; }
+    }
+
+    private void UpdateFilteredFeatures()
+    {
+        _filteredFeatures = string.IsNullOrWhiteSpace(_searchString) ? _features.ToList() : _features.Where(f => FilterFunc(f)).ToList();
+        _filteredFeatures = (_sortColumn, _sortDirection) switch
+        {
+            ("name", "asc") => _filteredFeatures.OrderBy(f => f.Name).ToList(),
+            ("name", "desc") => _filteredFeatures.OrderByDescending(f => f.Name).ToList(),
+            ("description", "asc") => _filteredFeatures.OrderBy(f => f.Description ?? string.Empty).ToList(),
+            ("description", "desc") => _filteredFeatures.OrderByDescending(f => f.Description ?? string.Empty).ToList(),
+            ("routeurl", "asc") => _filteredFeatures.OrderBy(f => f.RouteUrl ?? string.Empty).ToList(),
+            ("routeurl", "desc") => _filteredFeatures.OrderByDescending(f => f.RouteUrl ?? string.Empty).ToList(),
+            _ => _filteredFeatures.OrderBy(f => f.Name).ToList()
+        };
+        _totalItems = _filteredFeatures.Count; _totalPages = _totalItems > 0 ? (int)Math.Ceiling((double)_totalItems / _pageSize) : 1;
+        if (_currentPage > _totalPages) _currentPage = _totalPages; if (_currentPage < 1) _currentPage = 1;
+        _pagedFeatures = _filteredFeatures.Skip((_currentPage - 1) * _pageSize).Take(_pageSize).ToList();
+    }
+
+    private void OnSearchChanged(string value) { _searchString = value; _currentPage = 1; UpdateFilteredFeatures(); StateHasChanged(); }
+    private void ToggleSort(string column) { if (_sortColumn == column) _sortDirection = _sortDirection == "asc" ? "desc" : "asc"; else { _sortColumn = column; _sortDirection = "asc"; } UpdateFilteredFeatures(); StateHasChanged(); }
+    private bool FilterFunc(FeatureDto feature) => string.IsNullOrWhiteSpace(_searchString) || feature.Name.ToLower().Contains(_searchString.ToLower()) || (feature.Description?.ToLower().Contains(_searchString.ToLower()) ?? false) || (feature.RouteUrl?.ToLower().Contains(_searchString.ToLower()) ?? false);
+    private int GetGlobalSerialNumber(FeatureDto feature) => _filteredFeatures.IndexOf(feature) + 1;
+    private string TruncateDescription(string? description) => string.IsNullOrEmpty(description) ? "-" : description.Length <= 50 ? description : description.Substring(0, 50) + "...";
+    private int GetStartRecord() => _totalItems > 0 ? (_currentPage - 1) * _pageSize + 1 : 0;
+    private int GetEndRecord() => Math.Min(_currentPage * _pageSize, _totalItems);
+    private int GetStartPage() => Math.Max(1, _currentPage - 2);
+    private int GetEndPage() => Math.Min(_totalPages, _currentPage + 2);
+    private void GoToPage(int page) { if (page >= 1 && page <= _totalPages) { _currentPage = page; UpdateFilteredFeatures(); StateHasChanged(); } }
+    private void OpenAddDialog() { _selectedFeature = null; _isEditMode = false; _featureModel = new FeatureFormDialog.FeatureFormModel(); _isDialogOpen = true; }
+    private void OpenEditDialog(FeatureDto feature) { _selectedFeature = feature; _isEditMode = true; _featureModel = new FeatureFormDialog.FeatureFormModel { Name = feature.Name, Description = feature.Description, RouteUrl = feature.RouteUrl, IsMainMenu = feature.IsMainMenu, ParentFeatureId = feature.ParentFeatureId, DisplayOrder = feature.DisplayOrder, Level = feature.Level, Icon = feature.Icon }; _isDialogOpen = true; }
+    private void OpenViewDialog(FeatureDto feature) { _selectedFeature = feature; _isOffcanvasOpen = true; }
+    private void CloseDialog() { _isDialogOpen = false; _selectedFeature = null; _featureModel = new FeatureFormDialog.FeatureFormModel(); _isEditMode = false; }
+    private void CloseOffcanvas() { _isOffcanvasOpen = false; _selectedFeature = null; }
+
+    private async Task HandleSubmit(FeatureFormDialog.FeatureFormModel model)
+    {
+        _isSaving = true;
+        try
+        {
+            if (_isEditMode && _selectedFeature != null)
+            {
+                var updateRequest = new UpdateFeatureRequest { Id = _selectedFeature.Id, Name = model.Name, Description = model.Description, RouteUrl = model.RouteUrl, IsMainMenu = model.IsMainMenu, ParentFeatureId = model.ParentFeatureId, DisplayOrder = model.DisplayOrder, Level = model.Level, Icon = model.Icon };
+                var response = await RBACService.UpdateFeatureAsync(_selectedFeature.Id, updateRequest);
+                if (response.Success) { Snackbar.Add("Feature updated successfully", Severity.Success); await LoadFeatures(); CloseDialog(); }
+                else Snackbar.Add(response.Message ?? "Failed to update feature", Severity.Error);
+            }
+            else
+            {
+                var createRequest = new CreateFeatureRequest { Name = model.Name, Description = model.Description, RouteUrl = model.RouteUrl, IsMainMenu = model.IsMainMenu, ParentFeatureId = model.ParentFeatureId, DisplayOrder = model.DisplayOrder, Level = model.Level, Icon = model.Icon };
+                var response = await RBACService.CreateFeatureAsync(createRequest);
+                if (response.Success) { Snackbar.Add("Feature created successfully", Severity.Success); await LoadFeatures(); CloseDialog(); }
+                else Snackbar.Add(response.Message ?? "Failed to create feature", Severity.Error);
+            }
+        }
+        catch (Exception ex) { Logger.LogError(ex, "Error saving feature"); Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
+        finally { _isSaving = false; }
+    }
+
+    private async Task DeleteFeature(FeatureDto feature)
+    {
+        try
+        {
+            var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation", "Delete Feature", $"Are you sure you want to delete '{feature.Name}'? This action cannot be undone.");
+            if (confirmed)
+            {
+                var response = await RBACService.DeleteFeatureAsync(feature.Id);
+                if (response.Success) { Snackbar.Add("Feature deleted successfully", Severity.Success); await LoadFeatures(); }
+                else Snackbar.Add(response.Message ?? "Failed to delete feature", Severity.Error);
+            }
+        }
+        catch (Exception ex) { Logger.LogError(ex, "Error deleting feature"); Snackbar.Add($"Error deleting feature: {ex.Message}", Severity.Error); }
+    }
+}

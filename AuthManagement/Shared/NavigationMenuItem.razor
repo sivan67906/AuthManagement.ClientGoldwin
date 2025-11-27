@@ -1,0 +1,63 @@
+@using AuthManagement.Models
+
+@if (!string.IsNullOrEmpty(Item.Url))
+{
+    <!-- Leaf node with URL -->
+    <li class="nav-item">
+        <a class="nav-link d-flex align-items-center" href="@Item.Url" @onclick="() => OnNavigate?.Invoke(Item.Url)">
+            <i class="@GetIcon() me-2"></i>
+            @Item.Title
+        </a>
+    </li>
+}
+else if (Item.Children != null && Item.Children.Any())
+{
+    <!-- Parent node with children -->
+    <li class="nav-item">
+        <a class="nav-link d-flex align-items-center" data-bs-toggle="collapse" href="#collapse-@Item.Title.Replace(" ", "")">
+            <i class="@GetIcon() me-2"></i>
+            @Item.Title
+        </a>
+        <ul class="collapse @(Item.IsExpanded ? "show" : "") list-unstyled ms-3" id="collapse-@Item.Title.Replace(" ", "")">
+            @foreach (var child in Item.Children.OrderBy(c => c.Level))
+            {
+                <NavigationMenuItem Item="@child" OnNavigate="@OnNavigate" />
+            }
+        </ul>
+    </li>
+}
+else
+{
+    <!-- Node without URL or children -->
+    <li class="nav-item">
+        <span class="nav-link disabled d-flex align-items-center">
+            <i class="@GetIcon() me-2"></i>
+            @Item.Title
+        </span>
+    </li>
+}
+
+@code {
+    [Parameter]
+    public NavigationTreeNode Item { get; set; } = null!;
+
+    [Parameter]
+    public Action<string>? OnNavigate { get; set; }
+
+    private string GetIcon()
+    {
+        if (!string.IsNullOrWhiteSpace(Item.Icon))
+        {
+            return Item.Icon; // allow custom icon class
+        }
+
+        // Map levels to Bootstrap Icons
+        return Item.Level switch
+        {
+            0 => "bi-folder",        // closed folder
+            1 => "bi-folder2-open",  // open folder
+            2 => "bi-file-earmark",  // document
+            _ => "bi-circle"         // generic circle
+        };
+    }
+}

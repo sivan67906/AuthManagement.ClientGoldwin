@@ -1,0 +1,169 @@
+@page "/addresses"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@using Microsoft.AspNetCore.Authorization
+@using System.Net.Http.Headers
+@using System.Net.Http.Json
+@attribute [Authorize]
+@inject HttpClient Http
+@inject JwtAuthenticationStateProvider AuthProvider
+
+
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+<h3>My Addresses</h3>
+
+<button @onclick="LoadAddresses">Reload</button>
+
+<ul>
+    @if (addresses is not null)
+    {
+        @foreach (var a in addresses)
+        {
+            <li>@a.Line1, @a.City (@a.Country)</li>
+        }
+    }
+</ul>
+
+<h4>Add / Update</h4>
+<EditForm Model="editModel" OnValidSubmit="Save">
+    <InputText class="form-control" @bind-Value="editModel.Line1" Placeholder="Line1" />
+    <InputText class="form-control" @bind-Value="editModel.Line2" Placeholder="Line2" />
+    <InputText class="form-control" @bind-Value="editModel.City" Placeholder="City" />
+    <InputText class="form-control" @bind-Value="editModel.State" Placeholder="State" />
+    <InputText class="form-control" @bind-Value="editModel.PostalCode" Placeholder="Postal Code" />
+    <InputText class="form-control" @bind-Value="editModel.Country" Placeholder="Country" />
+    <button type="submit">Save</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p>@message</p>
+}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<AddressItem>? addresses;
+    private string? message;
+
+    private AddressEditModel editModel = new();
+
+    private class AddressItem
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Line1 { get; set; } = string.Empty;
+        public string? Line2 { get; set; }
+        public string City { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string PostalCode { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;
+    }
+
+    private class AddressEditModel
+    {
+        public string? Id { get; set; }
+        public string Line1 { get; set; } = string.Empty;
+        public string? Line2 { get; set; }
+        public string City { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string PostalCode { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAddresses();
+    }
+
+    private async Task LoadAddresses()
+    {
+        var token = await AuthProvider.GetTokenAsync();
+        if (!string.IsNullOrEmpty(token))
+        {
+            Http.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        var response = await Http.GetAsync("/user/addresses");
+        if (response.IsSuccessStatusCode)
+        {
+            var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<List<AddressItem>>>();
+            if (apiResponse?.Success == true)
+            {
+                addresses = apiResponse.Data;
+                message = null;
+            }
+            else
+            {
+                message = apiResponse?.Message ?? "Failed to load addresses.";
+            }
+        }
+        else
+        {
+            message = "Failed to load addresses.";
+        }
+    }
+
+    private async Task Save()
+    {
+        var token = await AuthProvider.GetTokenAsync();
+        if (!string.IsNullOrEmpty(token))
+        {
+            Http.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        HttpResponseMessage response;
+        if (string.IsNullOrEmpty(editModel.Id))
+        {
+            response = await Http.PostAsJsonAsync("/user/addresses", editModel);
+        }
+        else
+        {
+            response = await Http.PutAsJsonAsync($"/user/addresses/{editModel.Id}", editModel);
+        }
+
+        if (response.IsSuccessStatusCode)
+        {
+            message = "Saved.";
+            editModel = new();
+            await LoadAddresses();
+        }
+        else
+        {
+            try
+            {
+                var api = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                if (api is not null)
+                {
+                    if (!string.IsNullOrWhiteSpace(api.Message))
+                    {
+                        message = api.Message;
+                    }
+                    else if (api.Errors is { Count: > 0 })
+                    {
+                        message = string.Join(" ", api.Errors);
+                    }
+                    else
+                    {
+                        message = "Save failed.";
+                    }
+                }
+                else
+                {
+                    message = "Save failed.";
+                }
+            }
+            catch
+            {
+                message = "Save failed.";
+            }
+        }
+    }
+}

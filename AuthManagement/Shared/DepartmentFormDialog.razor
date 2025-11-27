@@ -1,0 +1,276 @@
+@using AuthManagement.Models
+@using System.ComponentModel.DataAnnotations
+
+@if (IsOpen)
+{
+    <div class="modal-backdrop show" @onclick:stopPropagation="true"></div>
+    
+    <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="ti tabler-building" style="color: #7c3aed; margin-right: 8px;"></i>
+                        @(IsEditMode ? "Edit Department" : "Add Department")
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="HandleCancel" disabled="@IsSaving"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                    <EditForm Model="@FormModel" OnValidSubmit="HandleValidSubmit">
+                        <DataAnnotationsValidator />
+                        
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Department Name<span class="text-danger">*</span>
+                            </label>
+                            <InputText @bind-Value="FormModel.Name" 
+                                       class="form-control" 
+                                       placeholder="Enter department name"
+                                       disabled="@IsSaving" />
+                            <ValidationMessage For="@(() => FormModel.Name)" class="text-danger" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <InputTextArea @bind-Value="FormModel.Description" 
+                                          class="form-control" 
+                                          placeholder="Enter description"
+                                          rows="4"
+                                          disabled="@IsSaving" />
+                            <ValidationMessage For="@(() => FormModel.Description)" class="text-danger" />
+                        </div>
+                        
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" 
+                                    class="btn btn-label-secondary" 
+                                    @onclick="HandleCancel"
+                                    disabled="@IsSaving">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="btn btn-primary" 
+                                    disabled="@IsSaving">
+                                @if (IsSaving)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Saving...</span>
+                                }
+                                else
+                                {
+                                    <i class="ti tabler-check me-1"></i>
+                                    <span>@(IsEditMode ? "Update" : "Create")</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 11000;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal {
+        z-index: 11001;
+    }
+
+    .modal-dialog-centered {
+        min-height: calc(100% - 3.5rem);
+        display: flex;
+        align-items: center;
+        margin: 1.75rem auto;
+        max-width: 540px;
+        width: 100%;
+        padding: 0 15px;
+    }
+
+    .modal-content {
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        overflow: visible;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        display: flex;
+        align-items: center;
+        margin: 0;
+    }
+
+    .btn-close {
+        border-radius: 1rem !important;
+    }
+   /*  .btn-close {
+        background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23666'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/0.75em auto no-repeat;
+        border: 0;
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        opacity: 1;
+        cursor: pointer;
+        position: absolute;
+        top: 20px;
+        right: 24px;
+        flex-shrink: 0;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-close:hover:not(:disabled) {
+        background-color: #f5f5f5;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23333'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e");
+        opacity: 1;
+    }
+
+    .btn-close:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    } */
+
+    .form-label {
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-control {
+        border: 1px solid #d9d9e3;
+        border-radius: 6px;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    .form-control:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
+        outline: none;
+    }
+
+    .form-control:disabled {
+        background-color: #f5f5f5;
+        opacity: 0.7;
+    }
+
+    .btn-primary {
+        background-color: #7c3aed;
+        border-color: #7c3aed;
+        color: white;
+        padding: 8px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 6px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        background-color: #6d28d9;
+        border-color: #6d28d9;
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .btn-label-secondary {
+        background-color: transparent;
+        border: 1px solid #d9d9e3;
+        color: #666;
+        padding: 8px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 6px;
+    }
+
+    .btn-label-secondary:hover:not(:disabled) {
+        background-color: #f5f5f5;
+        border-color: #d9d9e3;
+    }
+
+    .text-danger {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 4px;
+        display: block;
+    }
+    
+    .form-label .text-danger {
+        display: inline;
+        margin: 0;
+        margin-left: 2px;
+        font-size: inherit;
+    }
+
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+        border-width: 0.15em;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public bool IsEditMode { get; set; }
+
+    [Parameter]
+    public bool IsSaving { get; set; }
+
+    [Parameter]
+    public DepartmentFormModel FormModel { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public EventCallback<DepartmentFormModel> OnSubmit { get; set; }
+
+    private async Task HandleCancel()
+    {
+        if (!IsSaving)
+        {
+            await OnCancel.InvokeAsync();
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnSubmit.InvokeAsync(FormModel);
+    }
+
+    public class DepartmentFormModel
+    {
+        [Required(ErrorMessage = "Name is required")]
+        [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
+        public string Name { get; set; } = string.Empty;
+
+        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
+        public string? Description { get; set; }
+    }
+}

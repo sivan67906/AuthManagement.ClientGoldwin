@@ -1,0 +1,321 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using AuthManagement.Services
+@using AuthManagement.Models
+@inject MenuService MenuService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<NavMenu> Logger
+@implements IDisposable
+
+<AuthorizeView>
+    <Authorized Context="user">
+        @if (_isLoading)
+        {
+            <div class="nav-link">Loading navigation...</div>
+        }
+        else
+        {
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+
+            @if (_menus != null && _menus.Any())
+            {
+                @foreach (var menu in _menus)
+                {
+                    <div class="nav-item custom-dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" aria-expanded="@(_expandedMenus.Contains(menu.Id))"
+                           @onclick="() => ToggleMenu(menu.Id)" @onclick:preventDefault>
+                            @if (!string.IsNullOrEmpty(menu.Icon))
+                            {
+                                <i class="@menu.Icon"></i>
+                            }
+                            @menu.Name
+                        </a>
+                        
+                        @if (menu.SubMenus != null && menu.SubMenus.Any())
+                        {
+                            <div class="custom-dropdown-menu @(_expandedMenus.Contains(menu.Id) ? "show" : "")">
+                                @foreach (var subMenu in menu.SubMenus)
+                                {
+                                    @if (subMenu.Pages != null && subMenu.Pages.Any())
+                                    {
+                                        <div class="custom-dropdown-submenu">
+                                            <a class="dropdown-item submenu-toggle" href="#" 
+                                               @onclick="() => ToggleSubMenu(subMenu.Id)" @onclick:preventDefault>
+                                                @if (!string.IsNullOrEmpty(subMenu.Icon))
+                                                {
+                                                    <i class="@subMenu.Icon"></i>
+                                                }
+                                                @subMenu.Name
+                                                <i class="fas fa-chevron-right submenu-arrow"></i>
+                                            </a>
+                                            
+                                            @if (_expandedSubMenus.Contains(subMenu.Id))
+                                            {
+                                                <div class="submenu-pages @(_expandedSubMenus.Contains(subMenu.Id) ? "show" : "")">
+                                                    @foreach (var pageItem in subMenu.Pages)
+                                                    {
+                                                        <NavLink class="dropdown-item page-link" href="@pageItem.Url"
+                                                                @onclick="() => CloseAllMenus()">
+                                                            @pageItem.Name
+                                                        </NavLink>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                }
+                                
+                                @* Direct pages under main menu *@
+                                @if (menu.Pages != null && menu.Pages.Any())
+                                {
+                                    @foreach (var pageItem in menu.Pages)
+                                    {
+                                        <NavLink class="dropdown-item page-link" href="@pageItem.Url"
+                                                @onclick="() => CloseAllMenus()">
+                                            @pageItem.Name
+                                        </NavLink>
+                                    }
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+
+            <NavLink class="nav-link" href="profile">
+                <span class="oi oi-person" aria-hidden="true"></span> Profile
+            </NavLink>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+            <span class="oi oi-home" aria-hidden="true"></span> Home
+        </NavLink>
+        <NavLink class="nav-link" href="login">
+            <span class="oi oi-account-login" aria-hidden="true"></span> Login
+        </NavLink>
+        <NavLink class="nav-link" href="register">
+            <span class="oi oi-pencil" aria-hidden="true"></span> Register
+        </NavLink>
+    </NotAuthorized>
+</AuthorizeView>
+
+<style>
+    /* Main dropdown styling - without Bootstrap conflicts */
+    .nav-item.custom-dropdown {
+        position: relative;
+    }
+
+    .custom-dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        min-width: 200px;
+        padding: 0.5rem 0;
+        margin: 0.125rem 0 0;
+        background-color: #fff;
+        border: 1px solid rgba(0,0,0,.15);
+        border-radius: 0.25rem;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,.175);
+    }
+
+    .custom-dropdown-menu.show {
+        display: block;
+    }
+
+    /* Submenu styling */
+    .custom-dropdown-submenu {
+        position: relative;
+    }
+
+    .submenu-toggle {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.25rem 1.5rem;
+        width: 100%;
+        color: #212529;
+        text-decoration: none;
+        background-color: transparent;
+        border: 0;
+        cursor: pointer;
+    }
+
+    .submenu-toggle:hover {
+        background-color: #f8f9fa;
+    }
+
+    .submenu-arrow {
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+    }
+
+    .submenu-pages {
+        display: none;
+        position: relative;
+        padding-left: 1.5rem;
+        margin-top: 0.25rem;
+        background-color: #f8f9fa;
+        border-left: 2px solid #dee2e6;
+    }
+
+    .submenu-pages.show {
+        display: block;
+    }
+
+    /* Page link styling */
+    .page-link {
+        display: block;
+        padding: 0.25rem 1rem;
+        color: #212529;
+        text-decoration: none;
+        background-color: transparent;
+        border: 0;
+    }
+
+    .page-link:hover {
+        background-color: #e9ecef;
+        color: #0056b3;
+    }
+
+    .dropdown-item {
+        display: block;
+        width: 100%;
+        padding: 0.25rem 1.5rem;
+        clear: both;
+        font-weight: 400;
+        color: #212529;
+        text-align: inherit;
+        text-decoration: none;
+        white-space: nowrap;
+        background-color: transparent;
+        border: 0;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Icon spacing */
+    .nav-link i, .dropdown-item i {
+        margin-right: 0.5rem;
+    }
+</style>
+
+@code {
+    private List<MenuItemModel> _menus = new();
+    private bool _isLoading = true;
+    private HashSet<Guid> _expandedMenus = new();
+    private HashSet<Guid> _expandedSubMenus = new();
+    private bool _isDisposed = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+            await LoadMenusAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing navigation menu");
+        }
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        if (_isDisposed) return;
+        
+        try
+        {
+            await LoadMenusAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error handling authentication state change");
+        }
+    }
+
+    private async Task LoadMenusAsync()
+    {
+        try
+        {
+            _isLoading = true;
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            
+            if (authState?.User?.Identity?.IsAuthenticated == true)
+            {
+                Logger.LogDebug("Loading menus for authenticated user");
+                _menus = await MenuService.GetUserMenusAsync();
+                Logger.LogInformation("Loaded {Count} menus", _menus.Count);
+            }
+            else
+            {
+                Logger.LogDebug("User not authenticated, clearing menus");
+                _menus = new List<MenuItemModel>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading menus");
+            _menus = new List<MenuItemModel>();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ToggleMenu(Guid menuId)
+    {
+        if (_expandedMenus.Contains(menuId))
+        {
+            _expandedMenus.Remove(menuId);
+            // Collapse all submenus under this menu
+            var menu = _menus.FirstOrDefault(m => m.Id == menuId);
+            if (menu?.SubMenus != null)
+            {
+                foreach (var subMenu in menu.SubMenus)
+                {
+                    _expandedSubMenus.Remove(subMenu.Id);
+                }
+            }
+        }
+        else
+        {
+            // Close other menus before opening this one
+            _expandedMenus.Clear();
+            _expandedSubMenus.Clear();
+            _expandedMenus.Add(menuId);
+        }
+    }
+
+    private void ToggleSubMenu(Guid subMenuId)
+    {
+        if (_expandedSubMenus.Contains(subMenuId))
+        {
+            _expandedSubMenus.Remove(subMenuId);
+        }
+        else
+        {
+            _expandedSubMenus.Add(subMenuId);
+        }
+    }
+
+    private void CloseAllMenus()
+    {
+        _expandedMenus.Clear();
+        _expandedSubMenus.Clear();
+    }
+
+    public void Dispose()
+    {
+        _isDisposed = true;
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+}

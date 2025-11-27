@@ -1,0 +1,104 @@
+@* Custom Loading Spinner Component *@
+
+<div class="custom-spinner-container" style="@ContainerStyle">
+    <div class="custom-spinner" style="@SpinnerStyle">
+        <svg width="@Size" height="@Size" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="spinner-gradient-@UniqueId" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:@Color;stop-opacity:0.8" />
+                    <stop offset="100%" style="stop-color:@Color;stop-opacity:0.3" />
+                </linearGradient>
+            </defs>
+            
+            <!-- Ellipse paths with animation -->
+            <ellipse cx="100" cy="100" rx="70" ry="25" 
+                     fill="none" 
+                     stroke="url(#spinner-gradient-@UniqueId)" 
+                     stroke-width="3"
+                     opacity="0.6">
+                <animateTransform attributeName="transform"
+                                  type="rotate"
+                                  from="0 100 100"
+                                  to="360 100 100"
+                                  dur="1.5s"
+                                  repeatCount="indefinite"/>
+            </ellipse>
+            
+            <ellipse cx="100" cy="100" rx="70" ry="25" 
+                     fill="none" 
+                     stroke="url(#spinner-gradient-@UniqueId)" 
+                     stroke-width="3"
+                     opacity="0.6"
+                     transform="rotate(60 100 100)">
+                <animateTransform attributeName="transform"
+                                  type="rotate"
+                                  from="60 100 100"
+                                  to="420 100 100"
+                                  dur="1.5s"
+                                  repeatCount="indefinite"/>
+            </ellipse>
+            
+            <ellipse cx="100" cy="100" rx="70" ry="25" 
+                     fill="none" 
+                     stroke="url(#spinner-gradient-@UniqueId)" 
+                     stroke-width="3"
+                     opacity="0.6"
+                     transform="rotate(120 100 100)">
+                <animateTransform attributeName="transform"
+                                  type="rotate"
+                                  from="120 100 100"
+                                  to="480 100 100"
+                                  dur="1.5s"
+                                  repeatCount="indefinite"/>
+            </ellipse>
+        </svg>
+    </div>
+    @if (!string.IsNullOrEmpty(Message))
+    {
+        <div class="spinner-message" style="color: @Color; margin-top: 12px; font-size: 14px;">
+            @Message
+        </div>
+    }
+</div>
+
+<style>
+    .custom-spinner-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custom-spinner {
+        display: inline-block;
+    }
+
+    .spinner-message {
+        text-align: center;
+        font-weight: 500;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string Size { get; set; } = "60px";
+
+    [Parameter]
+    public string Color { get; set; } = "#9155FD";
+
+    [Parameter]
+    public string? Message { get; set; }
+
+    [Parameter]
+    public string ContainerStyle { get; set; } = "";
+
+    [Parameter]
+    public string SpinnerStyle { get; set; } = "";
+
+    private string UniqueId { get; set; } = Guid.NewGuid().ToString("N").Substring(0, 8);
+
+    protected override void OnInitialized()
+    {
+        UniqueId = Guid.NewGuid().ToString("N").Substring(0, 8);
+    }
+}

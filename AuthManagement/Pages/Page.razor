@@ -1,0 +1,294 @@
+@page "/page"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@using AuthManagement.Shared
+@inject RBACService RBACService
+@inject PermissionService PermissionService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<Page> Logger
+@inject ISnackbar Snackbar
+@attribute [Authorize]
+
+<PageTitle>Page Management</PageTitle>
+
+<style>
+    /* Reusing same styles from Role/Permission pages */
+    .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0; }
+    .page-title { font-size: 22px; font-weight: 600; color: #333; margin: 0; }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; margin: 0; padding: 0; list-style: none; }
+    .breadcrumb-item { display: flex; align-items: center; gap: 8px; }
+    .breadcrumb-separator { color: #999; }
+    .breadcrumb-link { color: #7c3aed; text-decoration: none; }
+    .breadcrumb-link:hover { text-decoration: underline; }
+    .breadcrumb-current { color: #666; }
+    .page-container { background: white; border-radius: 8px; overflow: hidden; }
+    .toolbar-container { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: white; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; gap: 16px; }
+    .toolbar-left { display: flex; align-items: center; }
+    .pages-list-label { font-size: 14px; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.5px; }
+    .toolbar-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .search-box { position: relative; min-width: 280px; }
+    .search-input { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid #d9d9e3; border-radius: 6px; font-size: 14px; }
+    .search-input:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1); }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; font-size: 18px; }
+    .add-button { background-color: #7c3aed; color: white; border: none; padding: 8px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background-color 0.2s; }
+    .add-button:hover { background-color: #6d28d9; }
+    .page-table { width: 100%; border-collapse: collapse; }
+    .page-table thead { background-color: #fafafa; }
+    .page-table th { padding: 12px 16px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f0f0f0; cursor: pointer; user-select: none; color: black; background: white; }
+    .page-table th.text-center { text-align: center; }
+    .page-table tbody tr { transition: background-color 0.2s; border-bottom: 1px solid #f8f9fa; }
+    .page-table td { padding: 10px 16px; font-size: 14px; color: #333; }
+    .serial-number { color: #666; font-weight: 500; }
+    .page-name { color: #333; font-weight: 600; }
+    .action-buttons { display: flex; gap: 6px; justify-content: center; }
+    .action-btn { width: 32px; height: 32px; border: none; background: #f5f5f5; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .action-btn:hover { transform: translateY(-2px); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); }
+    .action-btn.view-btn { background-color: #e3f2fd; color: #2196f3; }
+    .action-btn.view-btn:hover { background-color: #2196f3; color: white; }
+    .action-btn.edit-btn { background-color: #fff3e0; color: #ff9800; }
+    .action-btn.edit-btn:hover { background-color: #ff9800; color: white; }
+    .action-btn.delete-btn { background-color: #ffebee; color: #f44336; }
+    .action-btn.delete-btn:hover { background-color: #f44336; color: white; }
+    .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: white; border-top: 1px solid #f0f0f0; }
+    .pagination-info { font-size: 14px; color: #666; }
+    .pagination-buttons { display: flex; gap: 8px; align-items: center; }
+    .page-btn { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid #d9d9e3; background: white; border-radius: 6px; cursor: pointer; font-size: 14px; color: #333; transition: all 0.2s; }
+    .page-btn:hover:not(:disabled) { border-color: #7c3aed; color: #7c3aed; }
+    .page-btn.active { background: #7c3aed; color: white; border-color: #7c3aed; }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="page-header mb-3">
+        <div>
+            <h4 class="page-title">Page Management</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="/" class="breadcrumb-link"><i class="ti ti-home"></i><span>Home</span></a>
+                        <span class="breadcrumb-separator">/</span>
+                    </li>
+                    <li class="breadcrumb-item breadcrumb-current">Pages</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="page-container">
+        <div class="toolbar-container">
+            <div class="toolbar-left">
+                <span class="pages-list-label">Pages List</span>
+            </div>
+            <div class="toolbar-right">
+                <div class="search-box">
+                    <i class="ti ti-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search pages..."
+                           @bind-value="_searchString" @bind-value:event="oninput"
+                           @onkeyup="@(() => OnSearchChanged(_searchString))" />
+                </div>
+                @if (_canAdd)
+                {
+                    <button class="add-button" @onclick="OpenAddDialog">
+                        <i class="ti ti-plus"></i><span>Add Page</span>
+                    </button>
+                }
+            </div>
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                <p class="mt-2">Loading pages...</p>
+            </div>
+        }
+        else if (_hasError)
+        {
+            <div class="alert alert-danger m-3" role="alert"><i class="ti ti-alert-circle me-2"></i>@_errorMessage</div>
+        }
+        else if (_pagedPages != null && _pagedPages.Any())
+        {
+            <table class="page-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">No.</th>
+                        <th @onclick="@(() => ToggleSort("name"))">Page Name</th>
+                        <th @onclick="@(() => ToggleSort("url"))">URL</th>
+                        <th @onclick="@(() => ToggleSort("description"))">Description</th>
+                        <th class="text-center" style="width: 100px;">Status</th>
+                        <th class="text-center" style="width: 150px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var pageItem in _pagedPages)
+                    {
+                        <tr>
+                            <td class="serial-number">@GetGlobalSerialNumber(pageItem)</td>
+                            <td class="page-name">@pageItem.Name</td>
+                            <td>@pageItem.Url</td>
+                            <td>@TruncateDescription(pageItem.Description)</td>
+                            <td class="text-center">
+                                <span class="badge @(pageItem.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(pageItem.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    @if (_canView)
+                                    {
+                                        <button class="action-btn view-btn" @onclick="@(() => OpenViewDialog(pageItem))" title="View"><i class="ti ti-eye"></i></button>
+                                    }
+                                    @if (_canEdit)
+                                    {
+                                        <button class="action-btn edit-btn" @onclick="@(() => OpenEditDialog(pageItem))" title="Edit"><i class="ti ti-edit"></i></button>
+                                    }
+                                    @if (_canDelete)
+                                    {
+                                        <button class="action-btn delete-btn" @onclick="@(() => DeletePage(pageItem))" title="Delete"><i class="ti ti-trash"></i></button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="pagination-container">
+                <div class="pagination-info">Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries</div>
+                <div class="pagination-buttons">
+                    <button class="page-btn" @onclick="@(() => GoToPage(1))" disabled="@(_currentPage == 1)"><i class="ti ti-chevrons-left"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage - 1))" disabled="@(_currentPage == 1)"><i class="ti ti-chevron-left"></i></button>
+                    @if (GetStartPage() > 1) { <span class="ellipsis">...</span> }
+                    @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                    {
+                        var pageNum = i;
+                        <button class="page-btn @(pageNum == _currentPage ? "active" : "")" @onclick="@(() => GoToPage(pageNum))">@pageNum</button>
+                    }
+                    @if (GetEndPage() < _totalPages) { <span class="ellipsis">...</span> }
+                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage + 1))" disabled="@(_currentPage >= _totalPages)"><i class="ti ti-chevron-right"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_totalPages))" disabled="@(_currentPage >= _totalPages)"><i class="ti ti-chevrons-right"></i></button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info m-3" role="alert"><i class="ti ti-info-circle me-2"></i>No pages found.</div>
+        }
+    </div>
+</div>
+
+<PageFormDialog IsOpen="@_isDialogOpen" IsEditMode="@_isEditMode" IsSaving="@_isSaving" FormModel="@_pageModel" OnCancel="@CloseDialog" OnSubmit="@HandleSubmit" />
+<PageDetailsOffcanvas IsOpen="@_isOffcanvasOpen" Page="@_selectedPage" OnClose="@CloseOffcanvas" />
+
+@code {
+    private List<PageDto> _pages = new();
+    private List<PageDto> _filteredPages = new();
+    private List<PageDto> _pagedPages = new();
+    private PageDto? _selectedPage;
+    private PageFormDialog.PageFormModel _pageModel = new();
+    private bool _isLoading = true, _isSaving = false, _hasError = false, _isDialogOpen = false, _isOffcanvasOpen = false, _isEditMode = false;
+    private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "name", _sortDirection = "asc";
+    private int _currentPage = 1, _pageSize = 10, _totalItems = 0, _totalPages = 1;
+    private bool _canView, _canAdd, _canEdit, _canDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (!authState.User.Identity?.IsAuthenticated ?? true) { NavigationManager.NavigateTo("/login"); return; }
+            var permissions = await PermissionService.GetPagePermissionsAsync("/page");
+            _canView = permissions.CanView; _canAdd = permissions.CanAdd; _canEdit = permissions.CanEdit; _canDelete = permissions.CanDelete;
+            await LoadPages();
+        }
+        catch (Exception ex) { Logger.LogError(ex, "Error initializing Page page"); _hasError = true; _errorMessage = $"Error initializing page: {ex.Message}"; _isLoading = false; }
+    }
+
+    private async Task LoadPages()
+    {
+        _isLoading = true; _hasError = false;
+        try
+        {
+            var response = await RBACService.GetAllPagesAsync();
+            if (response.Success && response.Data != null) { _pages = response.Data; UpdateFilteredPages(); }
+            else { _hasError = true; _errorMessage = response.Message ?? "Failed to load pages"; }
+        }
+        catch (Exception ex) { Logger.LogError(ex, "Error loading pages"); _hasError = true; _errorMessage = $"Error loading pages: {ex.Message}"; }
+        finally { _isLoading = false; }
+    }
+
+    private void UpdateFilteredPages()
+    {
+        _filteredPages = string.IsNullOrWhiteSpace(_searchString) ? _pages.ToList() : _pages.Where(p => FilterFunc(p)).ToList();
+        _filteredPages = (_sortColumn, _sortDirection) switch
+        {
+            ("name", "asc") => _filteredPages.OrderBy(p => p.Name).ToList(),
+            ("name", "desc") => _filteredPages.OrderByDescending(p => p.Name).ToList(),
+            ("url", "asc") => _filteredPages.OrderBy(p => p.Url).ToList(),
+            ("url", "desc") => _filteredPages.OrderByDescending(p => p.Url).ToList(),
+            ("description", "asc") => _filteredPages.OrderBy(p => p.Description ?? string.Empty).ToList(),
+            ("description", "desc") => _filteredPages.OrderByDescending(p => p.Description ?? string.Empty).ToList(),
+            _ => _filteredPages.OrderBy(p => p.Name).ToList()
+        };
+        _totalItems = _filteredPages.Count; _totalPages = _totalItems > 0 ? (int)Math.Ceiling((double)_totalItems / _pageSize) : 1;
+        if (_currentPage > _totalPages) _currentPage = _totalPages; if (_currentPage < 1) _currentPage = 1;
+        _pagedPages = _filteredPages.Skip((_currentPage - 1) * _pageSize).Take(_pageSize).ToList();
+    }
+
+    private void OnSearchChanged(string value) { _searchString = value; _currentPage = 1; UpdateFilteredPages(); StateHasChanged(); }
+    private void ToggleSort(string column) { if (_sortColumn == column) _sortDirection = _sortDirection == "asc" ? "desc" : "asc"; else { _sortColumn = column; _sortDirection = "asc"; } UpdateFilteredPages(); StateHasChanged(); }
+    private bool FilterFunc(PageDto page) => string.IsNullOrWhiteSpace(_searchString) || page.Name.ToLower().Contains(_searchString.ToLower()) || page.Url.ToLower().Contains(_searchString.ToLower()) || (page.Description?.ToLower().Contains(_searchString.ToLower()) ?? false);
+    private int GetGlobalSerialNumber(PageDto page) => _filteredPages.IndexOf(page) + 1;
+    private string TruncateDescription(string? description) => string.IsNullOrEmpty(description) ? "-" : description.Length <= 50 ? description : description.Substring(0, 50) + "...";
+    private int GetStartRecord() => _totalItems > 0 ? (_currentPage - 1) * _pageSize + 1 : 0;
+    private int GetEndRecord() => Math.Min(_currentPage * _pageSize, _totalItems);
+    private int GetStartPage() => Math.Max(1, _currentPage - 2);
+    private int GetEndPage() => Math.Min(_totalPages, _currentPage + 2);
+    private void GoToPage(int page) { if (page >= 1 && page <= _totalPages) { _currentPage = page; UpdateFilteredPages(); StateHasChanged(); } }
+    private void OpenAddDialog() { _selectedPage = null; _isEditMode = false; _pageModel = new PageFormDialog.PageFormModel(); _isDialogOpen = true; }
+    private void OpenEditDialog(PageDto page) { _selectedPage = page; _isEditMode = true; _pageModel = new PageFormDialog.PageFormModel { Name = page.Name, Url = page.Url, Description = page.Description, DisplayOrder = page.DisplayOrder }; _isDialogOpen = true; }
+    private void OpenViewDialog(PageDto page) { _selectedPage = page; _isOffcanvasOpen = true; }
+    private void CloseDialog() { _isDialogOpen = false; _selectedPage = null; _pageModel = new PageFormDialog.PageFormModel(); _isEditMode = false; }
+    private void CloseOffcanvas() { _isOffcanvasOpen = false; _selectedPage = null; }
+
+    private async Task HandleSubmit(PageFormDialog.PageFormModel model)
+    {
+        _isSaving = true;
+        try
+        {
+            if (_isEditMode && _selectedPage != null)
+            {
+                var updateRequest = new UpdatePageRequest { Id = _selectedPage.Id, Name = model.Name, Url = model.Url, Description = model.Description, DisplayOrder = model.DisplayOrder };
+                var response = await RBACService.UpdatePageAsync(_selectedPage.Id, updateRequest);
+                if (response.Success) { Snackbar.Add("Page updated successfully", Severity.Success); await LoadPages(); CloseDialog(); }
+                else Snackbar.Add(response.Message ?? "Failed to update page", Severity.Error);
+            }
+            else
+            {
+                var createRequest = new CreatePageRequest { Name = model.Name, Url = model.Url, Description = model.Description, DisplayOrder = model.DisplayOrder };
+                var response = await RBACService.CreatePageAsync(createRequest);
+                if (response.Success) { Snackbar.Add("Page created successfully", Severity.Success); await LoadPages(); CloseDialog(); }
+                else Snackbar.Add(response.Message ?? "Failed to create page", Severity.Error);
+            }
+        }
+        catch (Exception ex) { Logger.LogError(ex, "Error saving page"); Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
+        finally { _isSaving = false; }
+    }
+
+    private async Task DeletePage(PageDto page)
+    {
+        try
+        {
+            var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation", "Delete Page", $"Are you sure you want to delete '{page.Name}'? This action cannot be undone.");
+            if (confirmed)
+            {
+                var response = await RBACService.DeletePageAsync(page.Id);
+                if (response.Success) { Snackbar.Add("Page deleted successfully", Severity.Success); await LoadPages(); }
+                else Snackbar.Add(response.Message ?? "Failed to delete page", Severity.Error);
+            }
+        }
+        catch (Exception ex) { Logger.LogError(ex, "Error deleting page"); Snackbar.Add($"Error deleting page: {ex.Message}", Severity.Error); }
+    }
+}

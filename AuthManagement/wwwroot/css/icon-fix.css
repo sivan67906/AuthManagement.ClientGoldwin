@@ -1,0 +1,322 @@
+/* ==========================================
+   ICON RENDERING FIX - ENSURE ALL ICONS DISPLAY
+   ========================================== */
+
+/* Force Tabler Icon Font Loading */
+@font-face {
+    font-family: 'tabler-icons';
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+}
+
+/* Ensure all icon classes use the correct font */
+.ti,
+.icon-base,
+[class^="ti-"],
+[class*=" ti-"],
+[class^="tabler-"],
+[class*=" tabler-"] {
+    font-family: 'tabler-icons' !important;
+    speak: never;
+    font-style: normal !important;
+    font-weight: normal !important;
+    font-variant: normal !important;
+    text-transform: none !important;
+    line-height: 1 !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    display: inline-block !important;
+}
+
+/* CRITICAL: Ensure Tabler filled icons render */
+.tabler-circle-check-filled::before,
+.tabler-circle-x-filled::before,
+.tabler-alert-triangle-filled::before,
+.tabler-info-circle-filled::before,
+.tabler-bell-filled::before {
+    display: inline-block !important;
+    font-family: 'tabler-icons' !important;
+    font-style: normal !important;
+    font-weight: 400 !important;
+}
+
+/* Toast icon container - CRITICAL */
+.toast-icon-container i,
+.toast-icon-container .ti,
+.toast-icon-container .icon-base {
+    display: inline-block !important;
+    font-family: 'tabler-icons' !important;
+    font-size: 1.25rem !important;
+    line-height: 1 !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+/* Specific icon size classes */
+.icon-22px {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+}
+
+.icon-24px {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.icon-md {
+    font-size: 1.5rem;
+}
+
+.icon-lg {
+    font-size: 2rem;
+}
+
+/* Menu icon specific fixes */
+.menu-icon {
+    font-size: 1.375rem;
+    width: 1.375rem;
+    height: 1.375rem;
+    flex-shrink: 0;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Toast icon specific fixes */
+.toast .ti {
+    font-size: 1.25rem !important;
+}
+
+/* Toast icon classes - ensure proper rendering */
+.toast .ti::before,
+.toast .icon-base::before,
+.toast [class*="ti-"]::before {
+    font-family: 'tabler-icons' !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+}
+
+/* Specific toast icon types */
+.ti-circle-check-filled::before,
+.ti-circle-x-filled::before,
+.ti-alert-triangle-filled::before,
+.ti-info-circle-filled::before,
+.ti-bell-filled::before {
+    font-family: 'tabler-icons' !important;
+}
+
+/* Button icon alignment */
+.btn .ti {
+    vertical-align: middle;
+    margin-right: 0.25rem;
+}
+
+/* Dropdown icon alignment */
+.dropdown-menu .ti {
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+/* Navbar icon sizing */
+.navbar .ti {
+    font-size: 1.5rem;
+}
+
+/* Ensure icons in forms are visible */
+.input-group .ti {
+    font-size: 1.25rem;
+}
+
+/* Card header icons */
+.card-header .ti {
+    margin-right: 0.5rem;
+}
+
+/* Badge icons */
+.badge .ti {
+    font-size: 0.875rem;
+    margin-right: 0.25rem;
+}
+
+/* Avatar icons */
+.avatar .ti {
+    font-size: 1.25rem;
+}
+
+/* Alert icons */
+.alert .ti {
+    margin-right: 0.5rem;
+    font-size: 1.25rem;
+}
+
+/* List group icons */
+.list-group-item .ti {
+    margin-right: 0.75rem;
+}
+
+/* Breadcrumb icons */
+.breadcrumb .ti {
+    margin-right: 0.25rem;
+    font-size: 0.875rem;
+}
+
+/* Pagination icons */
+.pagination .ti {
+    font-size: 0.875rem;
+}
+
+/* Tab icons */
+.nav-tabs .ti,
+.nav-pills .ti {
+    margin-right: 0.5rem;
+}
+
+/* Progress bar icons */
+.progress-bar .ti {
+    margin-right: 0.25rem;
+}
+
+/* Spinner container icons */
+.spinner-border ~ .ti {
+    margin-left: 0.5rem;
+}
+
+/* Ensure no icon overlap */
+.menu-link .menu-icon + div {
+    margin-left: 0.5rem;
+}
+
+/* Fix icon vertical alignment in all contexts */
+.ti::before,
+.icon-base::before {
+    vertical-align: middle;
+}
+
+/* Prevent icon distortion */
+.ti,
+.icon-base {
+    min-width: 1em;
+    text-align: center;
+}
+
+/* Table icons */
+.table .ti {
+    margin-right: 0.5rem;
+}
+
+/* Modal icons */
+.modal-header .ti {
+    margin-right: 0.5rem;
+    font-size: 1.5rem;
+}
+
+/* Popover and tooltip icons */
+.popover .ti,
+.tooltip .ti {
+    font-size: 1rem;
+}
+
+/* Close button icons */
+.btn-close .ti {
+    font-size: 1rem;
+}
+
+/* Offcanvas icons */
+.offcanvas-header .ti {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+}
+
+/* Timeline icons */
+.timeline .ti {
+    font-size: 1.5rem;
+}
+
+/* Stepper icons */
+.bs-stepper .ti {
+    font-size: 1.5rem;
+}
+
+/* Action button icons in tables */
+.btn-icon .ti {
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+/* Search input icons */
+.search-input .ti {
+    font-size: 1.25rem;
+}
+
+/* File upload icons */
+.file-upload .ti {
+    font-size: 2rem;
+}
+
+/* Empty state icons */
+.empty-state .ti {
+    font-size: 3rem;
+}
+
+/* Status indicator icons */
+.status-indicator .ti {
+    font-size: 0.75rem;
+}
+
+/* Loading state icons with animation */
+.loading-icon .ti {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Fix for icons not showing in Safari */
+@supports (-webkit-appearance: none) {
+    .ti,
+    .icon-base {
+        -webkit-text-stroke: 0;
+    }
+}
+
+/* Fix for icons in print media */
+@media print {
+    .ti,
+    .icon-base {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* Ensure icons work in dark mode */
+[data-bs-theme="dark"] .ti,
+[data-bs-theme="dark"] .icon-base {
+    color: inherit;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .ti,
+    .icon-base {
+        font-weight: bold;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .menu-icon,
+    .ti,
+    .icon-base {
+        transition: none;
+    }
+}

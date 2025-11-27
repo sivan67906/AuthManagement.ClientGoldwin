@@ -1,0 +1,894 @@
+@page "/role"
+@using AuthManagement.Models
+@using AuthManagement.Services
+@using AuthManagement.Shared
+@inject RBACService RBACService
+@inject PermissionService PermissionService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<Role> Logger
+@inject ISnackbar Snackbar
+@attribute [Authorize]
+
+<PageTitle>Role Management</PageTitle>
+
+<style>
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 0;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #666;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .breadcrumb-separator {
+        color: #999;
+    }
+
+    .breadcrumb-link {
+        color: #7c3aed;
+        text-decoration: none;
+    }
+
+        .breadcrumb-link:hover {
+            text-decoration: underline;
+        }
+
+    .breadcrumb-current {
+        color: #666;
+    }
+
+    /* Container */
+    .role-container {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    /* Toolbar */
+    .toolbar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        background: white;
+        border-bottom: 1px solid #f0f0f0;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .toolbar-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .roles-list-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-left: auto;
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 280px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        border: 1px solid #d9d9e3;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1);
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 18px;
+    }
+
+    .add-button {
+        background-color: #7c3aed;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background-color 0.2s;
+        white-space: nowrap;
+    }
+
+        .add-button:hover {
+            background-color: #6d28d9;
+        }
+
+        .add-button i {
+            font-size: 18px;
+        }
+
+    /* Table */
+    .role-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .role-table thead {
+            background-color: #fafafa;
+        }
+
+        .role-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            user-select: none;
+            color: black;
+            background: white;
+        }
+
+            .role-table th:last-child {
+                border-right: none;
+            }
+
+            .role-table th.sortable {
+                position: relative;
+                padding-right: 30px;
+            }
+
+        .role-table th.text-center {
+            text-align: center;
+        }
+
+        .role-table tbody tr {
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .role-table td {
+            padding: 10px 16px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .role-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+    .serial-number {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .role-name {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .description-text {
+        color: #666;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: #f5f5f5;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        color: #666;
+        font-size: 18px;
+    }
+
+        .action-btn i {
+            font-size: 18px;
+            display: block;
+            line-height: 1;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-btn.view-btn {
+            background-color: #e3f2fd;
+            color: #2196f3;
+        }
+
+            .action-btn.view-btn:hover {
+                background-color: #2196f3;
+                color: white;
+            }
+
+        .action-btn.edit-btn {
+            background-color: #fff3e0;
+            color: #ff9800;
+        }
+
+            .action-btn.edit-btn:hover {
+                background-color: #ff9800;
+                color: white;
+            }
+
+        .action-btn.delete-btn {
+            background-color: #ffebee;
+            color: #f44336;
+        }
+
+            .action-btn.delete-btn:hover {
+                background-color: #f44336;
+                color: white;
+            }
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        background: white;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .pagination-info {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .pagination-buttons {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .page-btn {
+        min-width: 32px;
+        height: 32px;
+        padding: 0 8px;
+        border: 1px solid #d9d9e3;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #333;
+        transition: all 0.2s;
+    }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: #7c3aed;
+            color: #7c3aed;
+        }
+
+        .page-btn.active {
+            background: #7c3aed;
+            color: white;
+            border-color: #7c3aed;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    .ellipsis {
+        padding: 0 8px;
+        color: #999;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Page Header -->
+    <div class="page-header mb-3">
+        <div>
+            <h4 class="page-title">Role Management</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="/" class="breadcrumb-link">
+                            <i class="ti ti-home"></i>
+                            <span>Home</span>
+                        </a>
+                        <span class="breadcrumb-separator">/</span>
+                    </li>
+                    <li class="breadcrumb-item breadcrumb-current">Roles</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Card Container -->
+    <div class="role-container">
+        <!-- Toolbar -->
+        <div class="toolbar-container">
+            <div class="toolbar-left">
+                <span class="roles-list-label">Roles List</span>
+            </div>
+            <div class="toolbar-right">
+                <div class="search-box">
+                    <i class="ti ti-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search roles..."
+                           @bind-value="_searchString" @bind-value:event="oninput"
+                           @onkeyup="@(() => OnSearchChanged(_searchString))" />
+                </div>
+                @if (_canAdd)
+                {
+                    <button class="add-button" @onclick="OpenAddDialog">
+                        <i class="ti ti-plus"></i>
+                        <span>Add Role</span>
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Table -->
+        @if (_isLoading)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading roles...</p>
+            </div>
+        }
+        else if (_hasError)
+        {
+            <div class="alert alert-danger m-3" role="alert">
+                <i class="ti ti-alert-circle me-2"></i>@_errorMessage
+            </div>
+        }
+        else if (_pagedRoles != null && _pagedRoles.Any())
+        {
+            <table class="role-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">No.</th>
+                        <th @onclick="@(() => ToggleSort("department"))">Department</th>
+                        <th @onclick="@(() => ToggleSort("name"))">Role Name</th>
+                        <th @onclick="@(() => ToggleSort("description"))">Description</th>
+                        <th class="text-center" style="width: 150px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var role in _pagedRoles)
+                    {
+                        <tr>
+                            <td class="serial-number">@GetGlobalSerialNumber(role)</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(role.DepartmentName))
+                                {
+                                    <span class="badge bg-primary">@role.DepartmentName</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Global</span>
+                                }
+                            </td>
+                            <td class="role-name">@role.Name</td>
+                            <td class="description-text">@TruncateDescription(role.Description)</td>
+                            <td>
+                                <div class="action-buttons">
+                                    @if (_canView)
+                                    {
+                                        <button class="action-btn view-btn" @onclick="@(() => OpenViewDialog(role))" title="View">
+                                            <i class="ti ti-eye"></i>
+                                        </button>
+                                    }
+                                    @if (_canEdit)
+                                    {
+                                        <button class="action-btn edit-btn" @onclick="@(() => OpenEditDialog(role))" title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                    }
+                                    @if (_canDelete)
+                                    {
+                                        <button class="action-btn delete-btn" @onclick="@(() => DeleteRole(role))" title="Delete">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
+                </div>
+                <div class="pagination-buttons">
+                    <button class="page-btn" @onclick="@(() => GoToPage(1))" disabled="@(_currentPage == 1)">
+                        <i class="ti ti-chevrons-left"></i>
+                    </button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage - 1))" disabled="@(_currentPage == 1)">
+                        <i class="ti ti-chevron-left"></i>
+                    </button>
+
+                    @if (GetStartPage() > 1)
+                    {
+                        <span class="ellipsis">...</span>
+                    }
+
+                    @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                    {
+                        var pageNum = i;
+                        <button class="page-btn @(pageNum == _currentPage ? "active" : "")"
+                                @onclick="@(() => GoToPage(pageNum))">
+                            @pageNum
+                        </button>
+                    }
+
+                    @if (GetEndPage() < _totalPages)
+                    {
+                        <span class="ellipsis">...</span>
+                    }
+
+                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage + 1))" disabled="@(_currentPage >= _totalPages)">
+                        <i class="ti ti-chevron-right"></i>
+                    </button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_totalPages))" disabled="@(_currentPage >= _totalPages)">
+                        <i class="ti ti-chevrons-right"></i>
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info m-3" role="alert">
+                <i class="ti ti-info-circle me-2"></i>No roles found.
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Form Dialog Component -->
+<RoleFormDialog IsOpen="@_isDialogOpen"
+                IsEditMode="@_isEditMode"
+                IsSaving="@_isSaving"
+                FormModel="@_roleModel"
+                Departments="@_departments"
+                OnCancel="@CloseDialog"
+                OnSubmit="@HandleSubmit" />
+
+<!-- Details Offcanvas Component -->
+<RoleDetailsOffcanvas IsOpen="@_isOffcanvasOpen"
+                      Role="@_selectedRole"
+                      OnClose="@CloseOffcanvas" />
+
+@code {
+    private List<RoleDto> _roles = new();
+    private List<RoleDto> _filteredRoles = new();
+    private List<RoleDto> _pagedRoles = new();
+    private List<DepartmentDto> _departments = new();
+    private RoleDto? _selectedRole;
+    private RoleFormDialog.RoleFormModel _roleModel = new();
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private bool _hasError = false;
+    private string _errorMessage = string.Empty;
+    private bool _isDialogOpen = false;
+    private bool _isOffcanvasOpen = false;
+    private bool _isEditMode = false;
+
+    // Permissions
+    private bool _canView = false;
+    private bool _canAdd = false;
+    private bool _canEdit = false;
+    private bool _canDelete = false;
+
+    // Search and Pagination
+    private string _searchString = string.Empty;
+    private int _currentPage = 1;
+    private int _pageSize = 10;
+    private int _totalItems = 0;
+    private int _totalPages = 1;
+
+    // Sorting
+    private string _sortColumn = "name";
+    private string _sortDirection = "asc";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (!authState.User.Identity?.IsAuthenticated ?? true)
+            {
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
+            var permissions = await PermissionService.GetPagePermissionsAsync("/role");
+            _canView = permissions.CanView;
+            _canAdd = permissions.CanAdd;
+            _canEdit = permissions.CanEdit;
+            _canDelete = permissions.CanDelete;
+
+            Logger.LogInformation("Permissions set - View: {View}, Add: {Add}, Edit: {Edit}, Delete: {Delete}",
+                _canView, _canAdd, _canEdit, _canDelete);
+
+            await LoadRoles();
+            await LoadDepartments();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing Role page");
+            _hasError = true;
+            _errorMessage = $"Error initializing page: {ex.Message}";
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadRoles()
+    {
+        _isLoading = true;
+        _hasError = false;
+
+        try
+        {
+            Logger.LogInformation("Loading roles...");
+            var response = await RBACService.GetAllRolesAsync();
+
+            if (response.Success && response.Data != null)
+            {
+                _roles = response.Data;
+                Logger.LogInformation("Loaded {Count} roles", _roles.Count);
+                UpdateFilteredRoles();
+            }
+            else
+            {
+                _hasError = true;
+                _errorMessage = response.Message ?? "Failed to load roles";
+                Logger.LogWarning("Failed to load roles: {Message}", _errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading roles");
+            _hasError = true;
+            _errorMessage = $"Error loading roles: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadDepartments()
+    {
+        try
+        {
+            var response = await RBACService.GetAllDepartmentsAsync();
+            if (response.Success && response.Data != null)
+            {
+                _departments = response.Data;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading departments");
+        }
+    }
+
+    private void UpdateFilteredRoles()
+    {
+        // Filter
+        if (string.IsNullOrWhiteSpace(_searchString))
+        {
+            _filteredRoles = _roles.ToList();
+        }
+        else
+        {
+            _filteredRoles = _roles
+                .Where(r => FilterFunc(r))
+                .ToList();
+        }
+
+        // Sort
+        _filteredRoles = (_sortColumn, _sortDirection) switch
+        {
+            ("no", "asc") => _filteredRoles.OrderBy(r => _roles.IndexOf(r)).ToList(),
+            ("no", "desc") => _filteredRoles.OrderByDescending(r => _roles.IndexOf(r)).ToList(),
+            ("name", "asc") => _filteredRoles.OrderBy(r => r.Name).ToList(),
+            ("name", "desc") => _filteredRoles.OrderByDescending(r => r.Name).ToList(),
+            ("department", "asc") => _filteredRoles.OrderBy(r => r.DepartmentName ?? string.Empty).ToList(),
+            ("department", "desc") => _filteredRoles.OrderByDescending(r => r.DepartmentName ?? string.Empty).ToList(),
+            ("description", "asc") => _filteredRoles.OrderBy(r => r.Description ?? string.Empty).ToList(),
+            ("description", "desc") => _filteredRoles.OrderByDescending(r => r.Description ?? string.Empty).ToList(),
+            _ => _filteredRoles.OrderBy(r => r.Name).ToList()
+        };
+
+        _totalItems = _filteredRoles.Count;
+        _totalPages = _totalItems > 0 ? (int)Math.Ceiling((double)_totalItems / _pageSize) : 1;
+
+        if (_currentPage > _totalPages)
+        {
+            _currentPage = _totalPages;
+        }
+        if (_currentPage < 1)
+        {
+            _currentPage = 1;
+        }
+
+        _pagedRoles = _filteredRoles
+            .Skip((_currentPage - 1) * _pageSize)
+            .Take(_pageSize)
+            .ToList();
+    }
+
+    private void OnSearchChanged(string value)
+    {
+        _searchString = value;
+        _currentPage = 1;
+        UpdateFilteredRoles();
+        StateHasChanged();
+    }
+
+    private void ToggleSort(string column)
+    {
+        if (_sortColumn == column)
+        {
+            _sortDirection = _sortDirection == "asc" ? "desc" : "asc";
+        }
+        else
+        {
+            _sortColumn = column;
+            _sortDirection = "asc";
+        }
+        UpdateFilteredRoles();
+        StateHasChanged();
+    }
+
+    private bool FilterFunc(RoleDto role)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        var searchLower = _searchString.ToLower();
+        return role.Name.ToLower().Contains(searchLower) ||
+               (role.Description?.ToLower().Contains(searchLower) ?? false) ||
+               (role.DepartmentName?.ToLower().Contains(searchLower) ?? false);
+    }
+
+    private int GetGlobalSerialNumber(RoleDto role)
+    {
+        var index = _filteredRoles.IndexOf(role);
+        return index + 1;
+    }
+
+    private string TruncateDescription(string? description)
+    {
+        if (string.IsNullOrEmpty(description))
+            return "-";
+
+        if (description.Length <= 50)
+            return description;
+
+        return description.Substring(0, 50) + "...";
+    }
+
+    private int GetStartRecord()
+    {
+        return _totalItems > 0 ? (_currentPage - 1) * _pageSize + 1 : 0;
+    }
+
+    private int GetEndRecord()
+    {
+        return Math.Min(_currentPage * _pageSize, _totalItems);
+    }
+
+    private int GetStartPage()
+    {
+        return Math.Max(1, _currentPage - 2);
+    }
+
+    private int GetEndPage()
+    {
+        return Math.Min(_totalPages, _currentPage + 2);
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page >= 1 && page <= _totalPages)
+        {
+            _currentPage = page;
+            UpdateFilteredRoles();
+            StateHasChanged();
+        }
+    }
+
+    private void OpenAddDialog()
+    {
+        _selectedRole = null;
+        _isEditMode = false;
+        _roleModel = new RoleFormDialog.RoleFormModel();
+        _isDialogOpen = true;
+    }
+
+    private void OpenEditDialog(RoleDto role)
+    {
+        _selectedRole = role;
+        _isEditMode = true;
+        _roleModel = new RoleFormDialog.RoleFormModel
+            {
+                Name = role.Name,
+                Description = role.Description,
+                DepartmentId = role.DepartmentId
+            };
+        _isDialogOpen = true;
+    }
+
+    private void OpenViewDialog(RoleDto role)
+    {
+        _selectedRole = role;
+        _isOffcanvasOpen = true;
+    }
+
+    private void CloseDialog()
+    {
+        _isDialogOpen = false;
+        _selectedRole = null;
+        _roleModel = new RoleFormDialog.RoleFormModel();
+        _isEditMode = false;
+    }
+
+    private void CloseOffcanvas()
+    {
+        _isOffcanvasOpen = false;
+        _selectedRole = null;
+    }
+
+    private async Task HandleSubmit(RoleFormDialog.RoleFormModel model)
+    {
+        _isSaving = true;
+        try
+        {
+            if (_isEditMode && _selectedRole != null)
+            {
+                var updateRequest = new UpdateRoleRequest
+                    {
+                        RoleId = _selectedRole.Id,
+                        Name = model.Name,
+                        Description = model.Description,
+                        DepartmentId = model.DepartmentId
+                    };
+
+                var response = await RBACService.UpdateRoleAsync(_selectedRole.Id, updateRequest);
+                if (response.Success)
+                {
+                    Snackbar.Add("Role updated successfully", Severity.Success);
+                    await LoadRoles();
+                    CloseDialog();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to update role", Severity.Error);
+                }
+            }
+            else
+            {
+                var createRequest = new CreateRoleRequest
+                    {
+                        Name = model.Name,
+                        Description = model.Description,
+                        DepartmentId = model.DepartmentId
+                    };
+
+                var response = await RBACService.CreateRoleAsync(createRequest);
+                if (response.Success)
+                {
+                    Snackbar.Add("Role created successfully", Severity.Success);
+                    await LoadRoles();
+                    CloseDialog();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to create role", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error saving role");
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task DeleteRole(RoleDto role)
+    {
+        try
+        {
+            var confirmed = await JSRuntime.InvokeAsync<bool>("showDeleteConfirmation",
+                "Delete Role",
+                $"Are you sure you want to delete '{role.Name}'? This action cannot be undone.");
+
+            if (confirmed)
+            {
+                var response = await RBACService.DeleteRoleAsync(role.Id);
+                if (response.Success)
+                {
+                    Snackbar.Add("Role deleted successfully", Severity.Success);
+                    await LoadRoles();
+                }
+                else
+                {
+                    Snackbar.Add(response.Message ?? "Failed to delete role", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting role");
+            Snackbar.Add($"Error deleting role: {ex.Message}", Severity.Error);
+        }
+    }
+}

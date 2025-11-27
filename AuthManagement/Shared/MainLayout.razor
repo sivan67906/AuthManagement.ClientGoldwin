@@ -1,0 +1,123 @@
+@inherits LayoutComponentBase
+@inject NavigationService NavService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<MainLayout> Logger
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<ToastContainer />
+<ConfirmDialog />
+
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <!-- Left Sidebar Navigation Menu -->
+        <DynamicNavMenu />
+        
+        <!-- Layout Page -->
+        <div class="layout-page">
+            <!-- Top Navbar -->
+            <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+                <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                    <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)" @onclick="ToggleMobileMenu">
+                        <i class="icon-base ti tabler-menu-2 icon-md"></i>
+                    </a>
+                </div>
+
+                <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
+                    <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+                        <!-- Theme Toggle -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill" id="nav-theme" href="javascript:void(0);" data-bs-toggle="dropdown">
+                                <i class="icon-base ti tabler-sun icon-22px theme-icon-active text-heading"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <button type="button" class="dropdown-item align-items-center active" data-bs-theme-value="light">
+                                        <span><i class="icon-base ti tabler-sun icon-22px me-3"></i>Light</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item align-items-center" data-bs-theme-value="dark">
+                                        <span><i class="icon-base ti tabler-moon-stars icon-22px me-3"></i>Dark</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <AuthorizeView>
+                            <Authorized>
+                                <UserInfo />
+                            </Authorized>
+                        </AuthorizeView>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Content Wrapper -->
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1">
+                    @Body
+                </div>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layout-overlay layout-menu-toggle" @onclick="ToggleMobileMenu"></div>
+    <div class="drag-target"></div>
+</div>
+
+@code {
+    private bool _isDisposed = false;
+    
+    protected override void OnInitialized()
+    {
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("initThemeToggle");
+                await JSRuntime.InvokeVoidAsync("initMenuToggle");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error initializing theme/menu");
+            }
+        }
+    }
+
+    private void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        if (_isDisposed) return;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleMobileMenu()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("toggleMobileMenu");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error toggling mobile menu");
+        }
+    }
+
+    public void Dispose()
+    {
+        _isDisposed = true;
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+}

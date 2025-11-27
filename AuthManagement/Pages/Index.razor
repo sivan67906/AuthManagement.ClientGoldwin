@@ -1,0 +1,194 @@
+@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+
+<AuthorizeView>
+    <Authorized>
+        <div class="container-xxl flex-grow-1 container-p-y">
+            <h4 class="mb-4">
+                <span class="text-muted fw-light">Welcome back!</span>
+            </h4>
+
+            <div class="row">
+                <!-- Welcome Card -->
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start justify-content-between">
+                                <div class="d-flex align-items-start">
+                                    <div class="avatar avatar-lg me-3">
+                                        <div class="avatar-initial rounded-circle bg-label-primary">@AvatarInitials</div>
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-1">@DisplayName</h5>
+                                        @if (!string.IsNullOrWhiteSpace(PrimaryRole))
+                                        {
+                                            <p class="mb-0 text-body-secondary">@PrimaryRole</p>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(Email))
+                                        {
+                                            <p class="mb-0 small text-body-secondary">@Email</p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Card -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar me-3">
+                                    <div class="avatar-initial rounded-circle bg-label-primary">
+                                        <i class="icon-base ti tabler-user icon-22px"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Profile</h5>
+                                </div>
+                            </div>
+                            <p class="mb-3 text-body-secondary">Manage your personal information, contact details, and account preferences.</p>
+                            <a href="/profile" class="btn btn-sm btn-outline-primary">
+                                <i class="icon-base ti tabler-settings me-1"></i>
+                                Manage Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Password Card -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar me-3">
+                                    <div class="avatar-initial rounded-circle bg-label-success">
+                                        <i class="icon-base ti tabler-key icon-22px"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Change Password</h5>
+                                </div>
+                            </div>
+                            <p class="mb-3 text-body-secondary">Update your password to keep your account secure.</p>
+                            <a href="/change-password" class="btn btn-sm btn-outline-success">
+                                <i class="icon-base ti tabler-lock-open me-1"></i>
+                                Change Password
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two-Factor Auth Card -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar me-3">
+                                    <div class="avatar-initial rounded-circle bg-label-info">
+                                        <i class="icon-base ti tabler-shield-lock icon-22px"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Two-Factor Auth</h5>
+                                </div>
+                            </div>
+                            <p class="mb-3 text-body-secondary">Add an extra layer of security to your account with two-factor authentication.</p>
+                            <a href="/two-factor" class="btn btn-sm btn-outline-info">
+                                <i class="icon-base ti tabler-shield-check me-1"></i>
+                                Configure 2FA
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Addresses Card -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar me-3">
+                                    <div class="avatar-initial rounded-circle bg-label-warning">
+                                        <i class="icon-base ti tabler-map icon-22px"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Addresses</h5>
+                                </div>
+                            </div>
+                            <p class="mb-3 text-body-secondary">Manage your saved addresses for billing and shipping.</p>
+                            <a href="/addresses" class="btn btn-sm btn-outline-warning">
+                                <i class="icon-base ti tabler-location me-1"></i>
+                                Manage Addresses
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <!-- Redirect handled in code -->
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string? DisplayName { get; set; }
+    private string? Email { get; set; }
+    private string AvatarInitials { get; set; } = "";
+    private string? PrimaryRole { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated != true)
+        {
+            Navigation.NavigateTo("/login", replace: true);
+            return;
+        }
+
+        var user = authState.User;
+        var first = user.FindFirst("given_name")?.Value;
+        var last = user.FindFirst("family_name")?.Value;
+
+        var fullName = string.Join(" ", new[] { first, last }.Where(s => !string.IsNullOrWhiteSpace(s)));
+        Email = user.FindFirst("email")?.Value ?? user.FindFirst(ClaimTypes.Email)?.Value;
+
+        var userName = user.FindFirst("given_name")?.Value
+                       ?? user.FindFirst(ClaimTypes.Name)?.Value
+                       ?? Email;
+
+        DisplayName = !string.IsNullOrWhiteSpace(fullName)
+            ? fullName
+            : (userName ?? "User");
+
+        AvatarInitials = BuildInitials(first, last, DisplayName);
+
+        var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).Distinct().ToList();
+        PrimaryRole = roles.FirstOrDefault() ?? string.Empty;
+    }
+
+    private string BuildInitials(string? first, string? last, string? fallback)
+    {
+        var initials = "";
+
+        if (!string.IsNullOrWhiteSpace(first))
+            initials += char.ToUpperInvariant(first[0]);
+        if (!string.IsNullOrWhiteSpace(last))
+            initials += char.ToUpperInvariant(last[0]);
+
+        if (string.IsNullOrWhiteSpace(initials) && !string.IsNullOrWhiteSpace(fallback))
+        {
+            var parts = fallback.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 0)
+                initials = char.ToUpperInvariant(parts[0][0]).ToString();
+        }
+
+        return initials;
+    }
+}
