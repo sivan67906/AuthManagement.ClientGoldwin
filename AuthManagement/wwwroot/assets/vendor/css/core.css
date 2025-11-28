@@ -49,6 +49,7 @@
     --bs-gray-800: #595564;
     --bs-gray-900: #444050;
     --bs-primary: #7367f0;
+
     --bs-secondary: #808390;
     --bs-success: #28c76f;
     --bs-info: #00bad1;
@@ -28211,7 +28212,15 @@ li:not(:first-child) .dropdown-item,
 .layout-navbar-fixed .sticky-element {
     inset-block-start: 4.125rem
 }
-
+.menu-sub .menu-link:hover {
+    transform:none !important
+}
+.menu-item, .menu-link, .menu-sub {
+    transition: none !important;
+}
+    .menu-link :hover {
+        transform: none !important
+    }
 .layout-menu-fixed .layout-horizontal .sticky-element {
     inset-block-start: 6.75rem
 }
@@ -29036,7 +29045,8 @@ html:not(.layout-footer-fixed) .content-wrapper {
         inset-inline-start: 0 !important;
         margin-inline: 0 !important;
         transform: translate3d(-100%, 0, 0);
-        will-change: transform, -webkit-transform
+        will-change: transform, -webkit-transform;
+        z-index: 1111111111 !important;
     }
     :dir(rtl) .layout-menu {
         transform: translate3d(100%, 0, 0)
@@ -30288,6 +30298,36 @@ body:not(.modal-open) .layout-content-navbar .layout-navbar {
 [data-bs-theme=dark] .avatar {
     --bs-avatar-initial-bg: #373b50
 }
+[data-bs-theme="dark"] .department-container,
+[data-bs-theme="dark"] .toolbar-container,
+[data-bs-theme="dark"] .department-table th,
+[data-bs-theme="dark"] .pagination-container, [data-bs-theme="dark"] .role-table th, [data-bs-theme="dark"] tbody,
+[data-bs-theme="dark"] .feature-table th, [data-bs-theme="dark"] .page-table th, [data-bs-theme="dark"] .permission-table th,
+[data-bs-theme="dark"] .loading-container, .error-container, [data-bs-theme="dark"] .empty-state, [data-bs-theme="dark"] .mapping-table th,
+[data-bs-theme="dark"] .loading-spinner-container.loading-fullpage {
+    background: #373b50;
+}
+
+[data-bs-theme="dark"] .page-title,
+[data-bs-theme="dark"] .breadcrumb-current,
+[data-bs-theme="dark"] .department-table td span,
+[data-bs-theme="dark"] .sortable, [data-bs-theme="dark"] .department-table th,
+[data-bs-theme="dark"] .pagination-info, [data-bs-theme="dark"] .roles-list-label,
+[data-bs-theme="dark"] .role-table th, [data-bs-theme="dark"] .departments-list-label,
+[data-bs-theme="dark"] .role-table td, [data-bs-theme="dark"] .features-list-label, [data-bs-theme="dark"] .feature-table th,
+[data-bs-theme="dark"] .description-text, [data-bs-theme="dark"] .pages-list-label, [data-bs-theme="dark"] .pages-list-label,
+[data-bs-theme="dark"] .page-table th, [data-bs-theme="dark"] .page-table td, [data-bs-theme="dark"] .permissions-list-label,
+[data-bs-theme="dark"] .permission-table td, [data-bs-theme="dark"] .mappings-list-label,
+[data-bs-theme="dark"] .empty-state h5, [data-bs-theme="dark"] .empty-state p, [data-bs-theme="dark"] .tabler-users-group,
+[data-bs-theme="dark"] .mapping-table th, [data-bs-theme="dark"] .mapping-table td, [data-bs-theme="dark"] .mappings-list-label,
+[data-bs-theme="dark"] .feature-table td, [data-bs-theme="dark"] .permission-table th, [data-bs-theme="dark"] .role-name, [data-bs-theme="dark"] .serial-number,
+[data-bs-theme="dark"] .mapping-name {
+    color: white;
+    
+}
+[data-bs-theme="dark"] table tbody tr {
+    border-bottom: 1px solid #dcdddd47;
+}
 
 [data-bs-theme=dark] .avatar.avatar-online::after,
 [data-bs-theme=dark] .avatar.avatar-offline::after,
@@ -30938,3 +30978,122 @@ body:not(.modal-open) .layout-content-navbar .layout-navbar {
    
 }*/
 
+
+.bg-primary-gradient {
+    background: linear-gradient(to right, var(--bs-primary) 0, #0086edbd 100%) !important;
+    color: #fff;
+    padding: 3px 14px 3px 15px;
+}
+
+.bg-secondary-gradient {
+    background: linear-gradient(to right, rgb(38 191 148 / 74%) 0, #00a1c0 100%) !important;
+    color: #fff;
+    padding: 4px 15px 4px 15px;
+}
+.bg-success-gradient {
+    background: linear-gradient(to right, rgb(var(--bs-success-rgb)) 0, #00a1c0 100%) !important;
+    color: #fff;
+}
+
+.bg-danger-gradient {
+    background: linear-gradient(to right, rgb(var(--bs-danger-rgb)) 0, #a34a88 100%) !important;
+    color: #fff;
+}
+
+.bg-purple-gradient {
+    background: linear-gradient(to right, rgb(137, 32, 173) 0, #ff496d 100%) !important;
+    color: #fff;
+}
+
+.bg-orange-gradient {
+    background: linear-gradient(to right, rgb(255, 165, 5) 0, #9ba815 100%) !important;
+    color: #fff;
+}
+
+/* Hide columns on small screens */
+@media (max-width: 768px) {
+
+    .feature-table th:nth-child(3),
+    .feature-table td:nth-child(3),
+    .feature-table th:nth-child(4),
+    .feature-table td:nth-child(4),
+    .feature-table th:nth-child(5),
+    .feature-table td:nth-child(5),
+    .feature-table th:nth-child(6),
+    .feature-table td:nth-child(6) {
+        display: none;
+    }
+
+    .role-table th:nth-child(3),
+    .role-table td:nth-child(3),
+    .role-table th:nth-child(4),
+    .role-table td:nth-child(4),
+    .role-table th:nth-child(5),
+    .role-table td:nth-child(5) {
+        display: none;
+    }
+    .permission-table th:nth-child(3),
+    .permission-table td:nth-child(3),
+    .permission-table th:nth-child(4),
+    .permission-table td:nth-child(4),
+    .permission-table th:nth-child(5),
+    .permission-table td:nth-child(5) {
+        display: none;
+    }
+    .department-table th:nth-child(3),
+    .department-table td:nth-child(3),
+    .department-table th:nth-child(4),
+    .department-table td:nth-child(4) {
+        display: none;
+    }
+    .page-table th:nth-child(3),
+    .page-table td:nth-child(3),
+    .page-table th:nth-child(4),
+    .page-table td:nth-child(4),
+    .page-table th:nth-child(5),
+    .page-table td:nth-child(5),
+    .page-table th:nth-child(6),
+    .page-table td:nth-child(6){
+        display: none;
+    }
+    .mapping-table th:nth-child(3),
+    .mapping-table td:nth-child(3),
+    .mapping-table th:nth-child(4),
+    .mapping-table td:nth-child(4){
+        display: none;
+    }
+
+    .details-control {
+        cursor: pointer;
+        width: 40px;
+    }
+    .toolbar-right{
+        flex-wrap:wrap
+    }
+    .pagination-container {
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .page-header {
+        margin-bottom: 17px;
+        flex-wrap:wrap
+    }
+    .search-input{
+        width:auto !important
+    }
+    .toolbar-container{
+        flex-wrap:wrap
+    }
+}
+
+
+/* Hide columns on small screens */
+@media (min-width: 768px) {
+
+    .plusHeading {
+        display: none
+    }
+    .details-control {
+     display:none
+    }
+}

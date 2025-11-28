@@ -7,7 +7,7 @@
         <div class="offcanvas-header">
             <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
                 <div class="avatar-container">
-                    <i class="ti ti-lock" style="font-size: 32px; color: white;"></i>
+                    <i class="ti tabler-lock" style="font-size: 32px; color: white;"></i>
                 </div>
                 <div style="flex: 1;">
                     <h5 style="margin: 0; font-weight: 600; font-size: 20px;">@Permission?.Name</h5>
@@ -27,7 +27,7 @@
                 <h6 class="section-title">DETAILS</h6>
                 <div class="details-list">
                     <div class="detail-item">
-                        <div class="detail-icon"><i class="ti ti-calendar" style="color: #667eea;"></i></div>
+                        <div class="detail-icon"><i class="ti tabler-calendar" style="color: #667eea;"></i></div>
                         <div class="detail-content">
                             <div class="detail-label">Created At</div>
                             <div class="detail-value">@Permission?.CreatedAt.ToString("MMM dd, yyyy HH:mm")</div>
@@ -36,7 +36,7 @@
                     @if (Permission?.UpdatedAt != null)
                     {
                         <div class="detail-item">
-                            <div class="detail-icon"><i class="ti ti-refresh" style="color: #667eea;"></i></div>
+                            <div class="detail-icon"><i class="ti tabler-refresh" style="color: #667eea;"></i></div>
                             <div class="detail-content">
                                 <div class="detail-label">Last Updated</div>
                                 <div class="detail-value">@Permission.UpdatedAt.Value.ToString("MMM dd, yyyy HH:mm")</div>
@@ -44,7 +44,7 @@
                         </div>
                     }
                     <div class="detail-item">
-                        <div class="detail-icon"><i class="ti ti-circle-check" style="color: @(Permission?.IsActive == true ? "#10b981" : "#ef4444");"></i></div>
+                        <div class="detail-icon"><i class="ti tabler-circle-check" style="color: @(Permission?.IsActive == true ? "#10b981" : "#ef4444");"></i></div>
                         <div class="detail-content">
                             <div class="detail-label">Status</div>
                             <div><span class="status-badge @(Permission?.IsActive == true ? "status-active" : "status-inactive")">@(Permission?.IsActive == true ? "Active" : "Inactive")</span></div>

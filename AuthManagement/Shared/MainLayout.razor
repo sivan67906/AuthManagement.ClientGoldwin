@@ -89,6 +89,7 @@
             {
                 await JSRuntime.InvokeVoidAsync("initThemeToggle");
                 await JSRuntime.InvokeVoidAsync("initMenuToggle");
+
             }
             catch (Exception ex)
             {
@@ -96,7 +97,7 @@
             }
         }
     }
-
+ 
     private void OnAuthenticationStateChanged(Task<AuthenticationState> task)
     {
         if (_isDisposed) return;

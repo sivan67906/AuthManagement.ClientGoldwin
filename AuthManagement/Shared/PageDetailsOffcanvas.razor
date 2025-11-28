@@ -7,7 +7,7 @@
         <div class="offcanvas-header">
             <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
                 <div class="avatar-container">
-                    <i class="ti ti-file" style="font-size: 32px; color: white;"></i>
+                    <i class="ti tabler-file" style="font-size: 32px; color: white;"></i>
                 </div>
                 <div style="flex: 1;">
                     <h5 style="margin: 0; font-weight: 600; font-size: 20px;">@Page?.Name</h5>
@@ -27,30 +27,30 @@
                 <h6 class="section-title">DETAILS</h6>
                 <div class="details-list">
                     <div class="detail-item">
-                        <div class="detail-icon"><i class="ti ti-link" style="color: #667eea;"></i></div>
+                        <div class="detail-icon"><i class="ti tabler-link" style="color: #667eea;"></i></div>
                         <div class="detail-content">
                             <div class="detail-label">Page URL</div>
                             <div class="detail-value">@Page?.Url</div>
                         </div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-icon"><i class="ti ti-number" style="color: #667eea;"></i></div>
+                        <div class="detail-icon"><i class="ti tabler-number" style="color: #667eea;"></i></div>
                         <div class="detail-content">
                             <div class="detail-label">Display Order</div>
                             <div class="detail-value">@Page?.DisplayOrder</div>
                         </div>
                     </div>
-                    <div class="detail-item">
+                    @* <div class="detail-item">
                         <div class="detail-icon"><i class="ti ti-calendar" style="color: #667eea;"></i></div>
                         <div class="detail-content">
                             <div class="detail-label">Created At</div>
                             <div class="detail-value">@Page?.CreatedAt.ToString("MMM dd, yyyy HH:mm")</div>
                         </div>
-                    </div>
+                    </div> *@
                     @if (Page?.UpdatedAt != null)
                     {
                         <div class="detail-item">
-                            <div class="detail-icon"><i class="ti ti-refresh" style="color: #667eea;"></i></div>
+                            <div class="detail-icon"><i class="ti tabler-refresh" style="color: #667eea;"></i></div>
                             <div class="detail-content">
                                 <div class="detail-label">Last Updated</div>
                                 <div class="detail-value">@Page.UpdatedAt.Value.ToString("MMM dd, yyyy HH:mm")</div>
@@ -58,7 +58,7 @@
                         </div>
                     }
                     <div class="detail-item">
-                        <div class="detail-icon"><i class="ti ti-circle-check" style="color: @(Page?.IsActive == true ? "#10b981" : "#ef4444");"></i></div>
+                        <div class="detail-icon"><i class="ti tabler-circle-check" style="color: @(Page?.IsActive == true ? "#10b981" : "#ef4444");"></i></div>
                         <div class="detail-content">
                             <div class="detail-label">Status</div>
                             <div><span class="status-badge @(Page?.IsActive == true ? "status-active" : "status-inactive")">@(Page?.IsActive == true ? "Active" : "Inactive")</span></div>

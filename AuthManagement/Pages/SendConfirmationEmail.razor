@@ -42,12 +42,8 @@
                         <input type="text" class="form-control" id="email" @bind="model.Email" placeholder="Enter your email" autofocus>
                     </div>
 
-                    @if (!string.IsNullOrEmpty(message))
-                    {
-                        <div class="alert @(success ? "alert-success" : "alert-danger") mb-4" role="alert">@message</div>
-                    }
 
-                    <button class="btn btn-primary d-grid w-100 mb-6" type="submit" disabled="@isLoading">
+                    <button class="btn btn-primary d-flex w-100 mb-6" type="submit" disabled="@isLoading">
                         @if (isLoading)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -60,9 +56,12 @@
                     </button>
                 </EditForm>
 
-                <p class="text-center mb-0">
-                    Didn't get the mail? <a href="javascript:void(0);" @onclick="HandleResendEmail">Resend</a>
-                </p>
+                <div class="text-center">
+                    <a href="/login" class="d-flex justify-content-center">
+                        <i class="icon-base ti tabler-chevron-left scaleX-n1-rtl me-1_5"></i>
+                        Back to login
+                    </a>
+                </div>
             </div>
         </div>
         <!-- /Verify Email -->
@@ -112,6 +111,8 @@
             await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/bootstrap5.js", true);
             await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/auto-focus.js", true);
             await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/pages-auth.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/toast.js", true);
+
         }
         await JS.InvokeVoidAsync("eval", "typeof initPagesAuth === 'function' && initPagesAuth();");
     }
@@ -126,6 +127,8 @@
         if (string.IsNullOrWhiteSpace(model.Email))
         {
             message = "Please enter your email address.";
+            await JS.InvokeVoidAsync("showToast", "error", message);
+
             success = false;
             return;
         }
@@ -142,17 +145,23 @@
             {
                 success = true;
                 message = "Confirmation email sent successfully! Please check your inbox.";
+                await JS.InvokeVoidAsync("showToast", "success", message);
+
             }
             else
             {
                 success = false;
                 message = result?.Message ?? "Failed to send confirmation email. Please try again.";
+                await JS.InvokeVoidAsync("showToast", "error", message);
+
             }
         }
         catch (Exception)
         {
             success = false;
             message = "An error occurred. Please try again.";
+            await JS.InvokeVoidAsync("showToast", "error", message);
+
         }
         finally
         {

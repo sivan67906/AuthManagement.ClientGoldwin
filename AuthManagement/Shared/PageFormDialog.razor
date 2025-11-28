@@ -9,7 +9,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="ti ti-file" style="color: #7c3aed; margin-right: 8px;"></i>
+                        <i class="ti tabler-file" style="color: #7c3aed; margin-right: 8px;"></i>
                         @(IsEditMode ? "Edit Page" : "Add Page")
                     </h5>
                     <button type="button" class="btn-close" @onclick="HandleCancel" disabled="@IsSaving"></button>
@@ -40,7 +40,11 @@
                             <button type="button" class="btn btn-label-secondary" @onclick="HandleCancel" disabled="@IsSaving">Cancel</button>
                             <button type="submit" class="btn btn-primary" disabled="@IsSaving">
                                 @if (IsSaving) { <span class="spinner-border spinner-border-sm me-2"></span><span>Saving...</span> }
-                                else { <i class="ti ti-check me-1"></i><span>@(IsEditMode ? "Update" : "Create")</span> }
+                                else
+                                {
+                                    <i class="ti tabler-check me-1"></i>
+                                    <span>@(IsEditMode ? "Update" : "Create")</span>
+     }
                             </button>
                         </div>
                     </EditForm>
@@ -58,7 +62,16 @@
     .modal-header { padding: 20px 24px; border-bottom: 1px solid #e9ecef; }
     .modal-title { font-size: 18px; font-weight: 600; color: #333; display: flex; align-items: center; margin: 0; }
     .btn-close { border-radius: 1rem !important; }
-    .form-label { font-weight: 500; color: #333; margin-bottom: 8px; font-size: 14px; }
+
+    .form-label {
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
     .form-control { border: 1px solid #d9d9e3; border-radius: 6px; padding: 10px 12px; font-size: 14px; }
     .form-control:focus { border-color: #7c3aed; box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1); outline: none; }
     .btn-primary { background-color: #7c3aed; border-color: #7c3aed; color: white; padding: 8px 20px; font-size: 14px; font-weight: 500; border-radius: 6px; }

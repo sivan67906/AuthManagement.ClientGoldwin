@@ -230,12 +230,12 @@ body.layout-menu-expanded .layout-overlay {
     z-index: 9999 !important;
 }
 
-.toast {
+/*.toast {
     animation: slideInRight 0.3s ease forwards;
     background: white !important;
     border: none !important;
     position: relative;
-}
+}*/
 
 @keyframes slideInRight {
     0% {

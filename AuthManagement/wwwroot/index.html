@@ -10,6 +10,7 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,12 +33,17 @@
     <link rel="stylesheet" href="assets/vendor/css/pages/cards-advance.css" />
     <link rel="stylesheet" href="assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
     <link rel="stylesheet" href="assets/vendor/libs/node-waves/node-waves.css" />
-    <link rel="stylesheet" href="assets/vendor/libs/sweetalert2/sweetalert2.css" />
-
+    <link rel="stylesheet" href="assets/css/sweetalert2.css" />
+    <link rel="stylesheet" href="assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
+    <link rel="stylesheet" href="assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
     <!-- Page CSS -->
+    <link rel="stylesheet" href="assets/vendor/libs/apex-charts/apex-charts.css" />
+
     <link rel="stylesheet" href="assets/css/page-auth.css" />
+    <link rel="stylesheet" href="assets/css/page-profile.css" />
     <link rel="stylesheet" href="css/custom.css" />
     <link rel="stylesheet" href="css/icon-fix.css" />
+    <link rel="stylesheet" href="assets/vendor/libs/swiper/swiper.css" />
 
     <!-- Helpers -->
     <script src="assets/vendor/js/helpers.js"></script>
@@ -127,23 +133,30 @@
     </div>
 
     <!-- Core JS -->
+
+    <script src="assets/vendor/libs/swiper/swiper.js"></script>
+
     <script src="assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="assets/js/swiper.js"></script>
+
+
     <script src="assets/vendor/libs/popper/popper.js"></script>
     <script src="assets/vendor/js/bootstrap.js"></script>
+    <script src="assets/js/datatables-bootstrap5.js"></script>
     <script src="assets/vendor/libs/node-waves/node-waves.js"></script>
     <script src="assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
     <script src="assets/vendor/libs/hammer/hammer.js"></script>
     <script src="assets/js/menu.js"></script>
-    
+
     <!-- SweetAlert2 -->
     <script src="assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
-    
+
     <!-- Main JS -->
     <script src="assets/js/main.js"></script>
-    
+
     <!-- Blazor -->
     <script src="_framework/blazor.webassembly.js"></script>
-    
+
     <!-- MudBlazor JS -->
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
 
@@ -157,8 +170,8 @@
                 }
                 const script = document.createElement('script');
                 script.src = src;
-                script.onload = function() { resolve(); };
-                script.onerror = function() { reject(new Error('Failed to load script: ' + src)); };
+                script.onload = function () { resolve(); };
+                script.onerror = function () { reject(new Error('Failed to load script: ' + src)); };
                 document.body.appendChild(script);
             });
         };
@@ -167,11 +180,11 @@
         let isMenuPinned = localStorage.getItem('menuPinned') === 'true';
 
         // Initialize menu on load
-        window.initMenuToggle = function() {
+        window.initMenuToggle = function () {
             const body = document.body;
             const layoutMenu = document.getElementById('layout-menu');
             const toggleIcon = document.querySelector('#menu-toggle-icon .menu-toggle-icon');
-            
+
             // Apply initial state
             if (isMenuPinned) {
                 body.classList.remove('layout-menu-collapsed');
@@ -188,17 +201,17 @@
                     toggleIcon.classList.add('ti-circle');
                 }
             }
-            
+
             // Hover functionality
             if (layoutMenu) {
-                layoutMenu.addEventListener('mouseenter', function() {
+                layoutMenu.addEventListener('mouseenter', function () {
                     if (!isMenuPinned) {
                         body.classList.add('layout-menu-hover');
                         body.classList.remove('layout-menu-collapsed');
                     }
                 });
-                
-                layoutMenu.addEventListener('mouseleave', function() {
+
+                layoutMenu.addEventListener('mouseleave', function () {
                     if (!isMenuPinned) {
                         body.classList.remove('layout-menu-hover');
                         body.classList.add('layout-menu-collapsed');
@@ -208,13 +221,13 @@
         };
 
         // Toggle menu pin
-        window.toggleMenuPin = function() {
+        window.toggleMenuPin = function () {
             const body = document.body;
             const toggleIcon = document.querySelector('#menu-toggle-icon .menu-toggle-icon');
-            
+
             isMenuPinned = !isMenuPinned;
             localStorage.setItem('menuPinned', isMenuPinned);
-            
+
             if (isMenuPinned) {
                 // Pin the menu
                 body.classList.remove('layout-menu-collapsed');
@@ -237,23 +250,23 @@
         };
 
         // Toggle mobile menu
-        window.toggleMobileMenu = function() {
+        window.toggleMobileMenu = function () {
             const body = document.body;
             body.classList.toggle('layout-menu-expanded');
         };
 
         // Theme toggle functionality
-        window.initThemeToggle = function() {
+        window.initThemeToggle = function () {
             const themeButtons = document.querySelectorAll('[data-bs-theme-value]');
-            
+
             themeButtons.forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function () {
                     const theme = this.getAttribute('data-bs-theme-value');
                     document.documentElement.setAttribute('data-bs-theme', theme);
-                    
+
                     themeButtons.forEach(btn => btn.classList.remove('active'));
                     this.classList.add('active');
-                    
+
                     const icon = document.querySelector('#nav-theme .theme-icon-active');
                     if (icon) {
                         if (theme === 'dark') {
@@ -264,20 +277,20 @@
                             icon.classList.add('tabler-sun');
                         }
                     }
-                    
+
                     localStorage.setItem('theme', theme);
                 });
             });
-            
+
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-bs-theme', savedTheme);
-            
+
             themeButtons.forEach(btn => {
                 if (btn.getAttribute('data-bs-theme-value') === savedTheme) {
                     btn.classList.add('active');
                 }
             });
-            
+
             const icon = document.querySelector('#nav-theme .theme-icon-active');
             if (icon && savedTheme === 'dark') {
                 icon.classList.remove('tabler-sun');
@@ -286,7 +299,7 @@
         };
 
         // Initialize Perfect Scrollbar
-        window.initMenuScrollbar = function() {
+        window.initMenuScrollbar = function () {
             const menuInner = document.querySelector('.menu-inner');
             if (menuInner && typeof PerfectScrollbar !== 'undefined') {
                 new PerfectScrollbar(menuInner, {
@@ -297,7 +310,7 @@
         };
 
         // SweetAlert2 Confirmation Dialog
-        window.showDeleteConfirmation = async function(title, text) {
+        window.showDeleteConfirmation = async function (title, text) {
             const result = await Swal.fire({
                 title: title || 'Are you sure?',
                 text: text || "You won't be able to revert this!",
@@ -331,12 +344,12 @@
             }
         }
 
-        window.showToast = function(type, message) {
+        window.showToast = function (type, message) {
             initToastContainer();
 
             const toast = document.createElement('div');
             toast.className = `custom-toast custom-toast-${type}`;
-            
+
             const icons = {
                 success: '<i class="ti ti-circle-check"></i>',
                 error: '<i class="ti ti-circle-x"></i>',
@@ -352,15 +365,15 @@
             };
 
             toast.innerHTML = `
-                <div class="custom-toast-icon">${icons[type] || icons.info}</div>
-                <div class="custom-toast-content">
-                    <div class="custom-toast-title">${titles[type] || titles.info}</div>
-                    <div class="custom-toast-message">${message}</div>
-                </div>
-                <button class="custom-toast-close" onclick="this.parentElement.remove()">
-                    <i class="ti ti-x"></i>
-                </button>
-            `;
+                                <div class="custom-toast-icon">${icons[type] || icons.info}</div>
+                                <div class="custom-toast-content">
+                                    <div class="custom-toast-title">${titles[type] || titles.info}</div>
+                                    <div class="custom-toast-message">${message}</div>
+                                </div>
+                                <button class="custom-toast-close" onclick="this.parentElement.remove()">
+                                    <i class="ti ti-x"></i>
+                                </button>
+                            `;
 
             toastContainer.appendChild(toast);
 
@@ -372,19 +385,19 @@
             }, 2000);
         };
 
-        window.showSuccessToast = function(message) {
+        window.showSuccessToast = function (message) {
             showToast('success', message);
         };
 
-        window.showErrorToast = function(message) {
+        window.showErrorToast = function (message) {
             showToast('error', message);
         };
 
-        window.showWarningToast = function(message) {
+        window.showWarningToast = function (message) {
             showToast('warning', message);
         };
 
-        window.showInfoToast = function(message) {
+        window.showInfoToast = function (message) {
             showToast('info', message);
         };
     </script>

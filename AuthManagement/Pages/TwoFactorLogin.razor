@@ -33,27 +33,34 @@
                 <!-- /Logo -->
                 <h4 class="mb-1">Two Step Verification 💬</h4>
                 <p class="mb-6">
-                    We sent a verification code to your mobile. Enter the code from the mobile in the field below.
+                    We sent a verification code to your mobile. Enter the code from the E-mail in the field below.
                     <span class="fw-medium d-block mt-1">******1234</span>
                 </p>
 
                 <EditForm Model="model" OnValidSubmit="HandleVerify" class="mb-4">
                     <p class="mb-2">Type your 6 digit security code</p>
-                    <div class="d-flex gap-2 mb-6">
-                        <input type="text" class="form-control text-center" maxlength="1" @bind="digit1" @oninput="MoveFocus" autofocus>
-                        <input type="text" class="form-control text-center" maxlength="1" @bind="digit2" @oninput="MoveFocus">
-                        <input type="text" class="form-control text-center" maxlength="1" @bind="digit3" @oninput="MoveFocus">
-                        <input type="text" class="form-control text-center" maxlength="1" @bind="digit4" @oninput="MoveFocus">
-                        <input type="text" class="form-control text-center" maxlength="1" @bind="digit5" @oninput="MoveFocus">
-                        <input type="text" class="form-control text-center" maxlength="1" @bind="digit6" @oninput="MoveFocus">
+                    <div class="d-flex gap-2 mb-6" >
+                        <input @ref="box1" type="text" maxlength="1" class="form-control text-center"
+                               @bind="digit1" @oninput='(e) => MoveNext(e, box2)' @onkeydown='(e) => MovePrev(e, 1)' autofocus>
+
+                        <input @ref="box2" type="text" maxlength="1" class="form-control text-center"
+                               @bind="digit2" @oninput='(e) => MoveNext(e, box3)' @onkeydown='(e) => MovePrev(e, 2)'>
+
+                        <input @ref="box3" type="text" maxlength="1" class="form-control text-center"
+                               @bind="digit3" @oninput='(e) => MoveNext(e, box4)' @onkeydown='(e) => MovePrev(e, 3)'>
+
+                        <input @ref="box4" type="text" maxlength="1" class="form-control text-center"
+                               @bind="digit4" @oninput='(e) => MoveNext(e, box5)' @onkeydown='(e) => MovePrev(e, 4)'>
+
+                        <input @ref="box5" type="text" maxlength="1" class="form-control text-center"
+                               @bind="digit5" @oninput='(e) => MoveNext(e, box6)' @onkeydown='(e) => MovePrev(e, 5)'>
+
+                        <input @ref="box6" type="text" maxlength="1" class="form-control text-center"
+                               @bind="digit6" @oninput='(e) => MoveNext(e, null)' @onkeydown='(e) => MovePrev(e, 6)'>
                     </div>
 
-                    @if (!string.IsNullOrEmpty(message))
-                    {
-                        <div class="alert alert-danger mb-4" role="alert">@message</div>
-                    }
-
-                    <button class="btn btn-primary d-grid w-100 mb-6" type="submit" disabled="@isLoading">
+              
+                    <button class="btn btn-primary d-flex w-100 mb-6" type="submit" disabled="@isLoading">
                         @if (isLoading)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -79,12 +86,58 @@
     private TwoFactorModel model = new();
     private string? message;
     private bool isLoading;
-    private string digit1 = string.Empty;
-    private string digit2 = string.Empty;
-    private string digit3 = string.Empty;
-    private string digit4 = string.Empty;
-    private string digit5 = string.Empty;
-    private string digit6 = string.Empty;
+    private string digit1 = "";
+    private string digit2 = "";
+    private string digit3 = "";
+    private string digit4 = "";
+    private string digit5 = "";
+    private string digit6 = "";
+
+    ElementReference box1, box2, box3, box4, box5, box6;
+
+    // Auto move to next box
+    private async Task MoveNext(ChangeEventArgs e, ElementReference? nextBox)
+    {
+        var value = e.Value?.ToString();
+
+        if (!string.IsNullOrEmpty(value) && value.Length == 1 && nextBox.HasValue)
+            await nextBox.Value.FocusAsync();
+    }
+
+    // Backspace logic
+    private async Task MovePrev(KeyboardEventArgs e, int index)
+    {
+        if (e.Key != "Backspace") return;
+
+        switch (index)
+        {
+            case 1: digit1 = ""; break;
+            case 2: digit2 = ""; break;
+            case 3: digit3 = ""; break;
+            case 4: digit4 = ""; break;
+            case 5: digit5 = ""; break;
+            case 6: digit6 = ""; break;
+        }
+
+        StateHasChanged(); // refresh UI
+
+        // Move focus to previous ONLY if not first
+        if (index > 1)
+        {
+            var prev = index switch
+            {
+                2 => box1,
+                3 => box2,
+                4 => box3,
+                5 => box4,
+                6 => box5,
+                _ => box1
+            };
+
+            await prev.FocusAsync();
+        }
+    }
+
 
     private class TwoFactorModel
     {
@@ -100,6 +153,8 @@
             await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/bootstrap5.js", true);
             await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/auto-focus.js", true);
             await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/pages-auth.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/toast.js", true);
+
         }
         await JS.InvokeVoidAsync("eval", "typeof initPagesAuth === 'function' && initPagesAuth();");
     }
@@ -122,6 +177,8 @@
         if (model.Code.Length != 6)
         {
             message = "Please enter all 6 digits.";
+            await JS.InvokeVoidAsync("showToast", "error", message);
+
             return;
         }
 
@@ -130,7 +187,7 @@
 
         try
         {
-            var response = await Http.PostAsJsonAsync("/auth/verify-2fa", model);
+            var response = await Http.PostAsJsonAsync("/auth/2fa/verify", model);
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
 
             if (response.IsSuccessStatusCode && result?.Success == true)
@@ -140,12 +197,30 @@
             }
             else
             {
-                message = result?.Message ?? "Invalid code. Please try again.";
+                // Check if there are errors in the response
+                if (result?.Errors != null && result.Errors.Count > 0)
+                {
+                    // Loop through all errors and combine them
+                    var errorMessages = new List<string>();
+                    foreach (var error in result.Errors)
+                    {
+                        errorMessages.Add(error);
+                    }
+                    message = string.Join(", ", errorMessages);
+                }
+                else
+                {
+                    message = result?.Message ?? "Invalid code. Please try again.";
+                }
+                await JS.InvokeVoidAsync("showToast", "error", message);
+
             }
         }
         catch (Exception)
         {
             message = "An error occurred. Please try again.";
+            await JS.InvokeVoidAsync("showToast", "error", message);
+
         }
         finally
         {
@@ -163,6 +238,8 @@
             if (response.IsSuccessStatusCode && result?.Success == true)
             {
                 message = "Code resent successfully!";
+                await JS.InvokeVoidAsync("showToast", "success", message);
+
                 await Task.Delay(3000);
                 message = null;
             }
@@ -170,6 +247,8 @@
         catch (Exception)
         {
             message = "Failed to resend code.";
+            await JS.InvokeVoidAsync("showToast", "error", message);
+
         }
     }
 }

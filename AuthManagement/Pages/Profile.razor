@@ -8,90 +8,147 @@
 @inject HttpClient Http
 @inject JwtAuthenticationStateProvider AuthProvider
 
-<div class="profile-container">
-    <div class="profile-card">
-        <div class="profile-header">
-            <div class="profile-icon-wrapper">
-                <i class="bi bi-person-circle profile-icon"></i>
-            </div>
-            <h4 class="text-center mb-4">User Profile</h4>
-            <p class="text-center text-muted mb-4">View your account information</p>
-        </div>
 
-        <hr class="my-4" />
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="profile-card">
 
         @if (profile is null)
         {
-            <div class="loading-section">
-                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                <p>Loading your profile...</p>
-            </div>
+            <LoadingSpinner FullPage="true" />
         }
         else
         {
-            <div class="profile-details">
-                <div class="card p-3">
-                    <div class="info-row">
-                        <div class="info-label">
-                            <i class="bi bi-envelope"></i>
-                            <p class="ms-2 mb-0">Email</p>
+
+
+            <!-- Header -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card mb-6">
+                        <div class="user-profile-header-banner">
+                            <img src="assets/img/avatars/profile-banner.png" alt="Banner image" class="rounded-top">
                         </div>
-                        <p>@profile.Email</p>
+                        <div class="user-profile-header d-flex flex-column flex-lg-row text-sm-start text-center mb-5">
+                            <div class="flex-shrink-0 mt-n2 mx-sm-0 mx-auto">
+                                <img src="assets/img/avatars/1.png" alt="user image" class="d-block h-auto ms-0 ms-sm-6 rounded user-profile-img">
+                            </div>
+                            <div class="flex-grow-1 mt-3 mt-lg-5">
+                                <div class="d-flex align-items-md-end align-items-sm-start align-items-center justify-content-md-between justify-content-start mx-5 flex-md-row flex-column gap-4">
+                                    <div class="user-profile-info">
+                                        <h4 class="mb-2 mt-lg-6">@profile.FirstName @profile.LastName</h4>
+                                        <ul class="list-inline mb-0 d-flex align-items-center flex-wrap justify-content-sm-start justify-content-center gap-4 my-2">
+                                            <li class="list-inline-item d-flex gap-2 align-items-center"><i class="icon-base ti tabler-mail icon-lg"></i><span class="fw-medium">@profile.Email</span></li>
+                                            <li class="list-inline-item d-flex gap-2 align-items-center"><i class="icon-base ti tabler-user  icon-lg"></i><span class="fw-medium"> @profile.FirstName @profile.LastName</span></li>
+                                        </ul>
+                                    </div>
+                                    <a href="/two-factor" class="btn btn-primary mb-1">
+                                        <i class="icon-base ti tabler-user-check icon-xs me-2"></i> Manage Two-Factor Authentication
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <div class="card p-3">
-                    <div class="info-row">
-                        <div class="info-label">
-                            <i class="bi bi-person"></i>
-                            <p class="ms-2 mb-0">Name</p>
+            </div>
+            <div class="row">
+                <div class="col-xl-4 col-lg-5 col-md-5">
+                    <!-- About User -->
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="card-text text-uppercase text-body-secondary small mb-0">About</p>
+                            <ul class="list-unstyled my-3 py-1">
+                                <li class="d-flex align-items-center mb-4"><i class="icon-base ti tabler-user icon-lg"></i><span class="fw-medium mx-2">Email confirmed:</span> <span>@(profile.EmailConfirmed ? "Yes" : "No")</span></li>
+                                <li class="d-flex align-items-center mb-4"><i class="icon-base ti tabler-check icon-lg"></i><span class="fw-medium mx-2">Two-factor enabled:</span> <span>@(profile.TwoFactorEnabled ? "Yes" : "No")</span></li>
+                            </ul>
+                            <p class="card-text text-uppercase text-body-secondary small mb-0">Contacts</p>
+                            <ul class="list-unstyled my-3 py-1">
+                                <li class="d-flex align-items-center mb-4">
+                                    <i class="icon-base ti tabler-phone-call icon-lg"></i><span class="fw-medium mx-2">Contact:</span>
+                                    <span>(123) 456-7890</span>
+                                </li>
+                                <li class="d-flex align-items-center mb-4">
+                                    <i class="icon-base ti tabler-mail icon-lg"></i><span class="fw-medium mx-2">Email:</span>
+                                    <span>@profile.Email</span>
+                                </li>
+                            </ul>
                         </div>
-                        <p>@profile.FirstName @profile.LastName</p>
                     </div>
+                    <!--/ About User -->
                 </div>
-
-                <div class="card p-3">
-                    <div class="info-row">
-                        <div class="info-label">
-                            <i class="bi bi-envelope-check"></i>
-                            <p class="ms-2 mb-0">Email Verification</p>
+                <div class="col-xl-8 col-lg-7 col-md-7">
+                    <div class="card card-action mb-6 h-100">
+                        <div class="card-header align-items-center">
+                            <h5 class="card-action-title mb-0"><i class="icon-base ti tabler-chart-bar-popular icon-lg me-4"></i>Activity</h5>
+                            <div class="card-action-element">
+                                <div class="dropdown">
+                                    <button type="button" class="btn dropdown-toggle hide-arrow p-0 text-body-secondary" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="javascript:void(0);">Share timeline</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0);">Suggest edits</a></li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li><a class="dropdown-item" href="javascript:void(0);">Report bug</a></li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
-                        @if (profile.EmailConfirmed)
-                        {
-                            <span class="badge bg-success">Verified</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-warning">Not Verified</span>
-                        }
-                    </div>
-                </div>
 
-                <div class="card p-3">
-                    <div class="info-row">
-                        <div class="info-label">
-                            <i class="bi bi-shield-lock"></i>
-                            <p class="ms-2 mb-0">Two-Factor Authentication</p>
+
+
+
+
+
+                        <div class="card-body pt-3">
+                            <ul class="timeline mb-0">
+                                <li class="timeline-item timeline-item-transparent h-50">
+                                    <span class="timeline-point timeline-point-primary"></span>
+
+                                    <div class="info-row d-flex align-item-center justify-content-between">
+                                        <div class="info-label d-flex">
+                                            <i class="bi bi-envelope-check"></i>
+                                            <p class="ms-2 mb-0">Email Verification</p>
+                                        </div>
+                                        @if (profile.EmailConfirmed)
+                                        {
+                                            <span class="badge bg-success">Verified</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">Not Verified</span>
+                                        }
+                                    </div>
+                                </li>
+
+                                <li class="timeline-item timeline-item-transparent">
+                                    <span class="timeline-point timeline-point-primary"></span>
+
+                                    <div class="info-row d-flex align-item-center justify-content-between">
+                                        <div class="info-label d-flex">
+                                            <i class="bi bi-shield-lock"></i>
+                                            <p class="ms-2 mb-0">Two-Factor Authentication</p>
+                                        </div>
+                                        @if (profile.TwoFactorEnabled)
+                                        {
+                                            <span class="badge bg-success">Enabled</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Disabled</span>
+                                        }
+                                    </div>
+                                </li>
+
+
+
+                            </ul>
                         </div>
-                        @if (profile.TwoFactorEnabled)
-                        {
-                            <span class="badge bg-success">Enabled</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-danger">Disabled</span>
-                        }
                     </div>
                 </div>
             </div>
 
-            <hr class="my-4" />
 
-            <div class="profile-actions">
-                <button type="button" class="btn btn-primary w-100">
-                    Manage Two-Factor Authentication
-                </button>
-            </div>
+
         }
 
         @if (!string.IsNullOrEmpty(message))
@@ -100,6 +157,9 @@
         }
     </div>
 </div>
+
+
+
 
 @code {
     private ProfileDto? profile;

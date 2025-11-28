@@ -340,25 +340,32 @@
     }
 </style>
 
-<div class="container-fluid mt-4">
+<div class="container-xxl flex-grow-1 container-p-y">
     <!-- Page Header -->
-    <div class="page-header mb-3">
-        <div>
-            <h4 class="page-title">Role Management</h4>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
+    @if (_isLoading)
+    {
+        <LoadingSpinner FullPage="true" />
+    }
+      else
+    {
+     <div class="page-header">
+            <h1 class="page-title">Roles List</h1>
+            <nav>
+                <ul class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="/" class="breadcrumb-link">
-                            <i class="ti ti-home"></i>
-                            <span>Home</span>
-                        </a>
-                        <span class="breadcrumb-separator">/</span>
+                       
+                        <a href="#" class="breadcrumb-link">
+                        <i class="ti tabler-home"></i>Home
+                    </a>
+                        <span class="breadcrumb-separator">></span>
                     </li>
-                    <li class="breadcrumb-item breadcrumb-current">Roles</li>
-                </ol>
+                    <li class="">
+                    <span class="breadcrumb-current">Roles</span>
+                    </li>
+                </ul>
             </nav>
         </div>
-    </div>
+
 
     <!-- Card Container -->
     <div class="role-container">
@@ -369,7 +376,7 @@
             </div>
             <div class="toolbar-right">
                 <div class="search-box">
-                    <i class="ti ti-search search-icon"></i>
+                    <i class="ti tabler-search search-icon"></i>
                     <input type="text" class="search-input" placeholder="Search roles..."
                            @bind-value="_searchString" @bind-value:event="oninput"
                            @onkeyup="@(() => OnSearchChanged(_searchString))" />
@@ -377,7 +384,7 @@
                 @if (_canAdd)
                 {
                     <button class="add-button" @onclick="OpenAddDialog">
-                        <i class="ti ti-plus"></i>
+                        <i class="ti tabler-plus"></i>
                         <span>Add Role</span>
                     </button>
                 }
@@ -397,7 +404,7 @@
         else if (_hasError)
         {
             <div class="alert alert-danger m-3" role="alert">
-                <i class="ti ti-alert-circle me-2"></i>@_errorMessage
+                <i class="ti tabler-alert-circle me-2"></i>@_errorMessage
             </div>
         }
         else if (_pagedRoles != null && _pagedRoles.Any())
@@ -405,6 +412,8 @@
             <table class="role-table">
                 <thead>
                     <tr>
+                            <th class="plusHeading"></th>
+
                         <th style="width: 80px;">No.</th>
                         <th @onclick="@(() => ToggleSort("department"))">Department</th>
                         <th @onclick="@(() => ToggleSort("name"))">Role Name</th>
@@ -416,11 +425,29 @@
                     @foreach (var role in _pagedRoles)
                     {
                         <tr>
+                                <td class="details-control" @onclick="@(() => ShowDetails(role))">
+                                    <div class="plus" style="border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-sizing: content-box;
+                        border: 2px solid var(--bs-paper-bg);
+                        background-color: var(--bs-primary);
+                        block-size: .85rem;
+                        box-shadow: 0 0 3px var(--bs-gray-800);
+                        color: var(--bs-white);    width: 17px;
+            height: 17px;">
+                                        <i class="ti tabler-plus"></i>
+                                    </div>
+                                </td>
+
                             <td class="serial-number">@GetGlobalSerialNumber(role)</td>
                             <td>
                                 @if (!string.IsNullOrEmpty(role.DepartmentName))
                                 {
-                                    <span class="badge bg-primary">@role.DepartmentName</span>
+                                    <span class="rounded-pill @(role.DepartmentName == "Finance" ? "bg-primary-gradient" : "bg-secondary-gradient")">
+                                        @role.DepartmentName
+                                    </span>
                                 }
                                 else
                                 {
@@ -434,19 +461,19 @@
                                     @if (_canView)
                                     {
                                         <button class="action-btn view-btn" @onclick="@(() => OpenViewDialog(role))" title="View">
-                                            <i class="ti ti-eye"></i>
+                                            <i class="ti tabler-eye"></i>
                                         </button>
                                     }
                                     @if (_canEdit)
                                     {
                                         <button class="action-btn edit-btn" @onclick="@(() => OpenEditDialog(role))" title="Edit">
-                                            <i class="ti ti-edit"></i>
+                                            <i class="ti tabler-edit"></i>
                                         </button>
                                     }
                                     @if (_canDelete)
                                     {
                                         <button class="action-btn delete-btn" @onclick="@(() => DeleteRole(role))" title="Delete">
-                                            <i class="ti ti-trash"></i>
+                                            <i class="ti tabler-trash"></i>
                                         </button>
                                     }
                                 </div>
@@ -463,10 +490,10 @@
                 </div>
                 <div class="pagination-buttons">
                     <button class="page-btn" @onclick="@(() => GoToPage(1))" disabled="@(_currentPage == 1)">
-                        <i class="ti ti-chevrons-left"></i>
+                        <i class="ti tabler-chevrons-left"></i>
                     </button>
                     <button class="page-btn" @onclick="@(() => GoToPage(_currentPage - 1))" disabled="@(_currentPage == 1)">
-                        <i class="ti ti-chevron-left"></i>
+                        <i class="ti tabler-chevron-left"></i>
                     </button>
 
                     @if (GetStartPage() > 1)
@@ -489,10 +516,10 @@
                     }
 
                     <button class="page-btn" @onclick="@(() => GoToPage(_currentPage + 1))" disabled="@(_currentPage >= _totalPages)">
-                        <i class="ti ti-chevron-right"></i>
+                        <i class="ti tabler-chevron-right"></i>
                     </button>
                     <button class="page-btn" @onclick="@(() => GoToPage(_totalPages))" disabled="@(_currentPage >= _totalPages)">
-                        <i class="ti ti-chevrons-right"></i>
+                        <i class="ti tabler-chevrons-right"></i>
                     </button>
                 </div>
             </div>
@@ -500,10 +527,11 @@
         else
         {
             <div class="alert alert-info m-3" role="alert">
-                <i class="ti ti-info-circle me-2"></i>No roles found.
+                <i class="ti tabler-info-circle me-2"></i>No roles found.
             </div>
         }
     </div>
+    }
 </div>
 
 <!-- Form Dialog Component -->
@@ -519,6 +547,35 @@
 <RoleDetailsOffcanvas IsOpen="@_isOffcanvasOpen"
                       Role="@_selectedRole"
                       OnClose="@CloseOffcanvas" />
+
+
+                      @if (showPopup && selectedFeature != null)
+{
+  
+     <div class="modal-backdrop show" @onclick:stopPropagation="true"></div>
+    <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
+        <div class="modal-dialog modal-dialog-top">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+Role Details                       
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="closeSelectFeatures"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                    <p><b>Role Name:</b> @selectedFeature.Name</p>
+                    <p><b>Description:</b> @selectedFeature.Description</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+
+
+
 
 @code {
     private List<RoleDto> _roles = new();
@@ -551,6 +608,29 @@
     // Sorting
     private string _sortColumn = "name";
     private string _sortDirection = "asc";
+
+
+     bool showPopup = false;
+ RoleDto? selectedFeature;
+
+ void closeSelectFeatures()
+ {
+     showPopup=false;
+ }
+
+    void ShowDetails(RoleDto feature)
+ {
+     selectedFeature = feature;
+     showPopup = true;
+ }
+
+ void ClosePopup()
+ {
+     showPopup = false;
+ }
+
+
+
 
     protected override async Task OnInitializedAsync()
     {

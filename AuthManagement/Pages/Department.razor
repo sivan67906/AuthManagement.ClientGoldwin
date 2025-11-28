@@ -21,6 +21,7 @@
         align-items: center;
         /* margin-bottom: 16px; */
         padding-bottom: 0;
+
     }
 
     .page-title {
@@ -415,7 +416,7 @@
     }
 </style>
 
-<div class="container-fluid" style="">
+<div class="container-xxl flex-grow-1 container-p-y" style="">
     @if (_isLoading)
     {
         <LoadingSpinner FullPage="true" />
@@ -434,7 +435,10 @@
             <nav>
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="#" class="breadcrumb-link">Home</a>
+                       
+                        <a href="#" class="breadcrumb-link">
+                            <i class="ti tabler-home"></i>Home
+                        </a>
                         <span class="breadcrumb-separator">></span>
                     </li>
                     <li class="">
@@ -476,6 +480,7 @@
                 <table class="department-table">
                     <thead>
                         <tr>
+                            <th class="plusHeading"></th>
                             <th style="width: 80px;" class="sortable" @onclick='() => ToggleSort("no")'>
                                 #
                                 <span class="sort-indicator">
@@ -508,6 +513,22 @@
                             @foreach (var department in _pagedDepartments)
                             {
                                 <tr>
+                                    <td class="details-control" @onclick="@(() => ShowDetails(department))">
+                                        <div class="plus" style="border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-sizing: content-box;
+                        border: 2px solid var(--bs-paper-bg);
+                        background-color: var(--bs-primary);
+                        block-size: .85rem;
+                        box-shadow: 0 0 3px var(--bs-gray-800);
+                        color: var(--bs-white);    width: 17px;
+            height: 17px;">
+                                            <i class="ti tabler-plus"></i>
+                                        </div>
+                                    </td>
+
                                     <td>
                                         <span class="serial-number">@GetGlobalSerialNumber(department)</span>
                                     </td>
@@ -618,6 +639,34 @@
                            Department="_selectedDepartment"
                            OnClose="CloseOffcanvas" />
 
+
+
+@if (showPopup && selectedFeature != null)
+{
+
+    <div class="modal-backdrop show" @onclick:stopPropagation="true"></div>
+    <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
+        <div class="modal-dialog modal-dialog-top">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Department Details
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="closeSelectFeatures"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                    <p><b>Description:</b> @selectedFeature.Name</p>
+                    <p><b>Description:</b> @selectedFeature.Description</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+
+
 @code {
     private List<DepartmentDto> _departments = new();
     private List<DepartmentDto> _filteredDepartments = new();
@@ -646,6 +695,28 @@
     private bool _canAdd = false;
     private bool _canEdit = false;
     private bool _canDelete = false;
+
+
+     bool showPopup = false;
+    DepartmentDto? selectedFeature;
+
+    void closeSelectFeatures()
+    {
+        showPopup=false;
+    }
+
+    void ShowDetails(DepartmentDto feature)
+    {
+        selectedFeature = feature;
+        showPopup = true;
+    }
+
+    void ClosePopup()
+    {
+        showPopup = false;
+    }
+
+
 
     protected override async Task OnInitializedAsync()
     {

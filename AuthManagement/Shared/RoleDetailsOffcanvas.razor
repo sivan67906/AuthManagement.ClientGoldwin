@@ -9,7 +9,7 @@
         <div class="offcanvas-header">
             <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
                 <div class="avatar-container">
-                    <i class="ti ti-shield-check" style="font-size: 32px; color: white;"></i>
+                    <i class="ti tabler-shield-check" style="font-size: 32px; color: white;"></i>
                 </div>
                 <div style="flex: 1;">
                     <h5 style="margin: 0; font-weight: 600; font-size: 20px;">@Role?.Name</h5>
@@ -38,7 +38,7 @@
                     {
                         <div class="detail-item">
                             <div class="detail-icon">
-                                <i class="ti ti-building" style="color: #667eea;"></i>
+                                <i class="ti tabler-building" style="color: #667eea;"></i>
                             </div>
                             <div class="detail-content">
                                 <div class="detail-label">Department</div>
@@ -47,28 +47,28 @@
                         </div>
                     }
 
-                    <div class="detail-item">
+                    @* <div class="detail-item">
                         <div class="detail-icon">
-                            <i class="ti ti-calendar" style="color: #667eea;"></i>
+                            <i class="ti tabler-calendar" style="color: #667eea;"></i>
                         </div>
                         <div class="detail-content">
                             <div class="detail-label">Created At</div>
                             <div class="detail-value">@Role?.CreatedAt.ToString("MMM dd, yyyy HH:mm")</div>
                         </div>
-                    </div>
+                    </div> *@
 
-                    @if (Role?.UpdatedAt != null)
+                   @*  @if (Role?.UpdatedAt != null)
                     {
                         <div class="detail-item">
                             <div class="detail-icon">
-                                <i class="ti ti-refresh" style="color: #667eea;"></i>
+                                <i class="ti tabler-refresh" style="color: #667eea;"></i>
                             </div>
                             <div class="detail-content">
                                 <div class="detail-label">Last Updated</div>
                                 <div class="detail-value">@Role.UpdatedAt.Value.ToString("MMM dd, yyyy HH:mm")</div>
                             </div>
                         </div>
-                    }
+                    } *@
                 </div>
             </div>
         </div>

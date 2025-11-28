@@ -28,14 +28,14 @@ public class RBACService
     public async Task<ApiResponse<List<DepartmentDto>>> GetAllDepartmentsAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<DepartmentDto>>>("api/department") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<DepartmentDto>>>("api/department")
                ?? new ApiResponse<List<DepartmentDto>> { Success = false, Data = new List<DepartmentDto>() };
     }
 
     public async Task<ApiResponse<DepartmentDto>> GetDepartmentAsync(Guid id)
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<DepartmentDto>>($"api/department/{id}") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<DepartmentDto>>($"api/department/{id}")
                ?? new ApiResponse<DepartmentDto> { Success = false };
     }
 
@@ -43,7 +43,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PostAsJsonAsync("api/department", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<DepartmentDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<DepartmentDto>>()
                ?? new ApiResponse<DepartmentDto> { Success = false };
     }
 
@@ -51,7 +51,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PutAsJsonAsync($"api/department/{id}", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<DepartmentDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<DepartmentDto>>()
                ?? new ApiResponse<DepartmentDto> { Success = false };
     }
 
@@ -59,7 +59,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.DeleteAsync($"api/department/{id}");
-        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>()
                ?? new ApiResponse<bool> { Success = false };
     }
 
@@ -67,14 +67,14 @@ public class RBACService
     public async Task<ApiResponse<List<RoleDto>>> GetAllRolesAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<RoleDto>>>("api/role") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<RoleDto>>>("api/role")
                ?? new ApiResponse<List<RoleDto>> { Success = false, Data = new List<RoleDto>() };
     }
 
     public async Task<ApiResponse<RoleDto>> GetRoleByIdAsync(Guid id)
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<RoleDto>>($"api/role/{id}") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<RoleDto>>($"api/role/{id}")
                ?? new ApiResponse<RoleDto> { Success = false };
     }
 
@@ -82,7 +82,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PostAsJsonAsync("api/role", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<RoleDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<RoleDto>>()
                ?? new ApiResponse<RoleDto> { Success = false };
     }
 
@@ -90,7 +90,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PutAsJsonAsync($"api/role/{id}", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<RoleDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<RoleDto>>()
                ?? new ApiResponse<RoleDto> { Success = false };
     }
 
@@ -98,7 +98,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.DeleteAsync($"api/role/{id}");
-        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>()
                ?? new ApiResponse<bool> { Success = false };
     }
 
@@ -106,14 +106,14 @@ public class RBACService
     public async Task<ApiResponse<List<PermissionDto>>> GetAllPermissionsAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<PermissionDto>>>("api/permission") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<PermissionDto>>>("api/permission")
                ?? new ApiResponse<List<PermissionDto>> { Success = false, Data = new List<PermissionDto>() };
     }
 
     public async Task<ApiResponse<PermissionDto>> GetPermissionAsync(Guid id)
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<PermissionDto>>($"api/permission/{id}") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<PermissionDto>>($"api/permission/{id}")
                ?? new ApiResponse<PermissionDto> { Success = false };
     }
 
@@ -121,7 +121,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PostAsJsonAsync("api/permission", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<PermissionDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<PermissionDto>>()
                ?? new ApiResponse<PermissionDto> { Success = false };
     }
 
@@ -129,7 +129,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PutAsJsonAsync($"api/permission/{id}", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<PermissionDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<PermissionDto>>()
                ?? new ApiResponse<PermissionDto> { Success = false };
     }
 
@@ -137,7 +137,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.DeleteAsync($"api/permission/{id}");
-        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>()
                ?? new ApiResponse<bool> { Success = false };
     }
 
@@ -145,14 +145,14 @@ public class RBACService
     public async Task<ApiResponse<List<FeatureDto>>> GetAllFeaturesAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<FeatureDto>>>("api/feature") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<FeatureDto>>>("api/feature")
                ?? new ApiResponse<List<FeatureDto>> { Success = false, Data = new List<FeatureDto>() };
     }
 
     public async Task<ApiResponse<FeatureDto>> GetFeatureAsync(Guid id)
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<FeatureDto>>($"api/feature/{id}") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<FeatureDto>>($"api/feature/{id}")
                ?? new ApiResponse<FeatureDto> { Success = false };
     }
 
@@ -160,7 +160,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PostAsJsonAsync("api/feature", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<FeatureDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<FeatureDto>>()
                ?? new ApiResponse<FeatureDto> { Success = false };
     }
 
@@ -168,7 +168,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PutAsJsonAsync($"api/feature/{id}", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<FeatureDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<FeatureDto>>()
                ?? new ApiResponse<FeatureDto> { Success = false };
     }
 
@@ -176,7 +176,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.DeleteAsync($"api/feature/{id}");
-        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>()
                ?? new ApiResponse<bool> { Success = false };
     }
 
@@ -184,14 +184,14 @@ public class RBACService
     public async Task<ApiResponse<List<PageDto>>> GetAllPagesAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<PageDto>>>("api/page") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<PageDto>>>("api/page")
                ?? new ApiResponse<List<PageDto>> { Success = false, Data = new List<PageDto>() };
     }
 
     public async Task<ApiResponse<PageDto>> GetPageAsync(Guid id)
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<PageDto>>($"api/page/{id}") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<PageDto>>($"api/page/{id}")
                ?? new ApiResponse<PageDto> { Success = false };
     }
 
@@ -199,7 +199,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PostAsJsonAsync("api/page", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<PageDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<PageDto>>()
                ?? new ApiResponse<PageDto> { Success = false };
     }
 
@@ -207,7 +207,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PutAsJsonAsync($"api/page/{id}", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<PageDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<PageDto>>()
                ?? new ApiResponse<PageDto> { Success = false };
     }
 
@@ -215,7 +215,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.DeleteAsync($"api/page/{id}");
-        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>()
                ?? new ApiResponse<bool> { Success = false };
     }
 
@@ -223,7 +223,7 @@ public class RBACService
     public async Task<ApiResponse<List<RolePermissionMappingDto>>> GetAllRolePermissionMappingsAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<RolePermissionMappingDto>>>("api/rolepermissionmapping") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<RolePermissionMappingDto>>>("api/rolepermissionmapping")
                ?? new ApiResponse<List<RolePermissionMappingDto>> { Success = false, Data = new List<RolePermissionMappingDto>() };
     }
 
@@ -231,7 +231,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PostAsJsonAsync("api/rolepermissionmapping", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<RolePermissionMappingDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<RolePermissionMappingDto>>()
                ?? new ApiResponse<RolePermissionMappingDto> { Success = false };
     }
 
@@ -239,7 +239,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PutAsJsonAsync($"api/rolepermissionmapping/{id}", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<RolePermissionMappingDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<RolePermissionMappingDto>>()
                ?? new ApiResponse<RolePermissionMappingDto> { Success = false };
     }
 
@@ -247,7 +247,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.DeleteAsync($"api/rolepermissionmapping/{id}");
-        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>()
                ?? new ApiResponse<bool> { Success = false };
     }
 
@@ -255,7 +255,7 @@ public class RBACService
     public async Task<ApiResponse<List<PagePermissionMappingDto>>> GetAllPagePermissionMappingsAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<PagePermissionMappingDto>>>("api/pagepermissionmapping") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<PagePermissionMappingDto>>>("api/pagepermissionmapping")
                ?? new ApiResponse<List<PagePermissionMappingDto>> { Success = false, Data = new List<PagePermissionMappingDto>() };
     }
 
@@ -263,7 +263,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PostAsJsonAsync("api/pagepermissionmapping", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<PagePermissionMappingDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<PagePermissionMappingDto>>()
                ?? new ApiResponse<PagePermissionMappingDto> { Success = false };
     }
 
@@ -271,7 +271,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PutAsJsonAsync($"api/pagepermissionmapping/{id}", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<PagePermissionMappingDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<PagePermissionMappingDto>>()
                ?? new ApiResponse<PagePermissionMappingDto> { Success = false };
     }
 
@@ -279,7 +279,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.DeleteAsync($"api/pagepermissionmapping/{id}");
-        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>()
                ?? new ApiResponse<bool> { Success = false };
     }
 
@@ -287,7 +287,7 @@ public class RBACService
     public async Task<ApiResponse<List<PageFeatureMappingDto>>> GetAllPageFeatureMappingsAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<PageFeatureMappingDto>>>("api/pagefeaturemapping") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<PageFeatureMappingDto>>>("api/pagefeaturemapping")
                ?? new ApiResponse<List<PageFeatureMappingDto>> { Success = false, Data = new List<PageFeatureMappingDto>() };
     }
 
@@ -295,7 +295,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PostAsJsonAsync("api/pagefeaturemapping", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<PageFeatureMappingDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<PageFeatureMappingDto>>()
                ?? new ApiResponse<PageFeatureMappingDto> { Success = false };
     }
 
@@ -303,7 +303,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PutAsJsonAsync($"api/pagefeaturemapping/{id}", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<PageFeatureMappingDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<PageFeatureMappingDto>>()
                ?? new ApiResponse<PageFeatureMappingDto> { Success = false };
     }
 
@@ -311,7 +311,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.DeleteAsync($"api/pagefeaturemapping/{id}");
-        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>()
                ?? new ApiResponse<bool> { Success = false };
     }
 
@@ -320,21 +320,21 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PostAsJsonAsync("api/useraccess/assign-role", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>()
                ?? new ApiResponse<bool> { Success = false };
     }
 
     public async Task<ApiResponse<List<UserDto>>> GetAllUsersAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<UserDto>>>("api/useraccess/users") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<UserDto>>>("api/useraccess/users")
                ?? new ApiResponse<List<UserDto>> { Success = false, Data = new List<UserDto>() };
     }
 
     public async Task<ApiResponse<UserAccessDto>> GetUserAccessAsync(Guid userId)
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<UserAccessDto>>($"api/useraccess/{userId}") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<UserAccessDto>>($"api/useraccess/{userId}")
                ?? new ApiResponse<UserAccessDto> { Success = false };
     }
 
@@ -342,7 +342,7 @@ public class RBACService
     public async Task<ApiResponse<List<UserPageDto>>> GetUserPagesAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<UserPageDto>>>("api/useraccess/pages") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<UserPageDto>>>("api/useraccess/pages")
                ?? new ApiResponse<List<UserPageDto>> { Success = false, Data = new List<UserPageDto>() };
     }
 
@@ -350,7 +350,7 @@ public class RBACService
     public async Task<ApiResponse<UserNavigationDto>> GetUserNavigationAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<UserNavigationDto>>("api/useraccess/navigation") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<UserNavigationDto>>("api/useraccess/navigation")
                ?? new ApiResponse<UserNavigationDto> { Success = false, Data = new UserNavigationDto() };
     }
 
@@ -358,42 +358,42 @@ public class RBACService
     public async Task<ApiResponse<UserAccessDto>> GetUserAccessByEmailAsync(string email)
     {
         await SetAuthorizationHeaderAsync();
-        
+
         try
         {
             var encodedEmail = Uri.EscapeDataString(email);
             var response = await _httpClient.GetAsync($"api/useraccess/by-email/{encodedEmail}");
-            
+
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
                 if (string.IsNullOrWhiteSpace(content))
                 {
-                    return new ApiResponse<UserAccessDto> 
-                    { 
-                        Success = false, 
-                        Message = "Empty response from server" 
+                    return new ApiResponse<UserAccessDto>
+                    {
+                        Success = false,
+                        Message = "Empty response from server"
                     };
                 }
-                
-                return await response.Content.ReadFromJsonAsync<ApiResponse<UserAccessDto>>() 
+
+                return await response.Content.ReadFromJsonAsync<ApiResponse<UserAccessDto>>()
                        ?? new ApiResponse<UserAccessDto> { Success = false, Message = "Failed to deserialize response" };
             }
             else
             {
-                return new ApiResponse<UserAccessDto> 
-                { 
-                    Success = false, 
-                    Message = $"Server returned status code: {response.StatusCode}" 
+                return new ApiResponse<UserAccessDto>
+                {
+                    Success = false,
+                    Message = $"Server returned status code: {response.StatusCode}"
                 };
             }
         }
         catch (Exception ex)
         {
-            return new ApiResponse<UserAccessDto> 
-            { 
-                Success = false, 
-                Message = $"Error: {ex.Message}" 
+            return new ApiResponse<UserAccessDto>
+            {
+                Success = false,
+                Message = $"Error: {ex.Message}"
             };
         }
     }
@@ -402,7 +402,7 @@ public class RBACService
     public async Task<ApiResponse<List<RoleHierarchyMappingDto>>> GetAllRoleHierarchyMappingsAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<RoleHierarchyMappingDto>>>("auth/rolehierarchymapping") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<RoleHierarchyMappingDto>>>("auth/rolehierarchymapping")
                ?? new ApiResponse<List<RoleHierarchyMappingDto>> { Success = false, Data = new List<RoleHierarchyMappingDto>() };
     }
 
@@ -410,7 +410,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PostAsJsonAsync("auth/rolehierarchymapping", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<RoleHierarchyMappingDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<RoleHierarchyMappingDto>>()
                ?? new ApiResponse<RoleHierarchyMappingDto> { Success = false };
     }
 
@@ -418,7 +418,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PutAsJsonAsync($"auth/rolehierarchymapping/{id}", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<RoleHierarchyMappingDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<RoleHierarchyMappingDto>>()
                ?? new ApiResponse<RoleHierarchyMappingDto> { Success = false };
     }
 
@@ -426,7 +426,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.DeleteAsync($"auth/rolehierarchymapping/{id}");
-        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>()
                ?? new ApiResponse<bool> { Success = false };
     }
 
@@ -434,15 +434,29 @@ public class RBACService
     public async Task<ApiResponse<List<UserRoleMappingDto>>> GetAllUserRoleMappingsAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<UserRoleMappingDto>>>("auth/userrolemapping") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<UserRoleMappingDto>>>("auth/userrolemapping")
                ?? new ApiResponse<List<UserRoleMappingDto>> { Success = false, Data = new List<UserRoleMappingDto>() };
+    }
+
+    public async Task<ApiResponse<List<UserWithoutRoleDto>>> GetUsersWithoutRolesAsync()
+    {
+        await SetAuthorizationHeaderAsync();
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<UserWithoutRoleDto>>>("auth/userrolemapping/users-without-roles")
+               ?? new ApiResponse<List<UserWithoutRoleDto>> { Success = false, Data = new List<UserWithoutRoleDto>() };
+    }
+
+    public async Task<ApiResponse<List<UserWithoutRoleDto>>> GetUsersWithoutRolesImmediateAsync()
+    {
+        await SetAuthorizationHeaderAsync();
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<UserWithoutRoleDto>>>("auth/userrolemapping/users-without-roles-immediate")
+               ?? new ApiResponse<List<UserWithoutRoleDto>> { Success = false, Data = new List<UserWithoutRoleDto>() };
     }
 
     public async Task<ApiResponse<UserRoleMappingDto>> CreateUserRoleMappingAsync(CreateUserRoleMappingRequest request)
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PostAsJsonAsync("auth/userrolemapping", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<UserRoleMappingDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<UserRoleMappingDto>>()
                ?? new ApiResponse<UserRoleMappingDto> { Success = false };
     }
 
@@ -450,7 +464,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PutAsJsonAsync($"auth/userrolemapping/{id}", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<UserRoleMappingDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<UserRoleMappingDto>>()
                ?? new ApiResponse<UserRoleMappingDto> { Success = false };
     }
 
@@ -458,7 +472,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.DeleteAsync($"auth/userrolemapping/{id}");
-        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>()
                ?? new ApiResponse<bool> { Success = false };
     }
 
@@ -466,7 +480,7 @@ public class RBACService
     public async Task<ApiResponse<List<RoleDepartmentMappingDto>>> GetAllRoleDepartmentMappingsAsync()
     {
         await SetAuthorizationHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<ApiResponse<List<RoleDepartmentMappingDto>>>("auth/roledepartmentmapping") 
+        return await _httpClient.GetFromJsonAsync<ApiResponse<List<RoleDepartmentMappingDto>>>("auth/roledepartmentmapping")
                ?? new ApiResponse<List<RoleDepartmentMappingDto>> { Success = false, Data = new List<RoleDepartmentMappingDto>() };
     }
 
@@ -474,7 +488,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PostAsJsonAsync("auth/roledepartmentmapping", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<RoleDepartmentMappingDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<RoleDepartmentMappingDto>>()
                ?? new ApiResponse<RoleDepartmentMappingDto> { Success = false };
     }
 
@@ -482,7 +496,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.PutAsJsonAsync($"auth/roledepartmentmapping/{id}", request);
-        return await response.Content.ReadFromJsonAsync<ApiResponse<RoleDepartmentMappingDto>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<RoleDepartmentMappingDto>>()
                ?? new ApiResponse<RoleDepartmentMappingDto> { Success = false };
     }
 
@@ -490,7 +504,7 @@ public class RBACService
     {
         await SetAuthorizationHeaderAsync();
         var response = await _httpClient.DeleteAsync($"auth/roledepartmentmapping/{id}");
-        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>() 
+        return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>()
                ?? new ApiResponse<bool> { Success = false };
     }
 

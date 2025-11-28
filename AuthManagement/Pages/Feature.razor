@@ -1,4 +1,4 @@
-@page "/feature"
+﻿@page "/feature"
 @using AuthManagement.Models
 @using AuthManagement.Services
 @using AuthManagement.Shared
@@ -26,7 +26,7 @@
     .toolbar-container { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: white; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; gap: 16px; }
     .toolbar-left { display: flex; align-items: center; }
     .features-list-label { font-size: 14px; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.5px; }
-    .toolbar-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .toolbar-right { display: flex; align-items: center; gap: 12px; margin-left: auto;flex-wrap:wrap }
     .search-box { position: relative; min-width: 280px; }
     .search-input { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid #d9d9e3; border-radius: 6px; font-size: 14px; }
     .search-input:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.1); }
@@ -65,21 +65,29 @@
     .ellipsis { padding: 0 8px; color: #999; }
 </style>
 
-<div class="container-fluid mt-4">
-    <div class="page-header mb-3">
-        <div>
-            <h4 class="page-title">Feature Management</h4>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
+<div class="container-xxl flex-grow-1 container-p-y">
+    @if (_isLoading)
+    {
+        <LoadingSpinner FullPage="true" />
+    }
+    else{
+      <div class="page-header">
+        <h1 class="page-title">Features List</h1>
+            <nav>
+                <ul class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="/" class="breadcrumb-link"><i class="ti ti-home"></i><span>Home</span></a>
-                        <span class="breadcrumb-separator">/</span>
+                        <a href="#" class="breadcrumb-link">
+                        <i class="ti tabler-home"></i>Home
+                    </a>
+                        <span class="breadcrumb-separator">></span>
                     </li>
-                    <li class="breadcrumb-item breadcrumb-current">Features</li>
-                </ol>
+                    <li class="">
+                    <span class="breadcrumb-current">Features</span>
+                    </li>
+                </ul>
             </nav>
         </div>
-    </div>
+
 
     <div class="feature-container">
         <div class="toolbar-container">
@@ -88,7 +96,7 @@
             </div>
             <div class="toolbar-right">
                 <div class="search-box">
-                    <i class="ti ti-search search-icon"></i>
+                    <i class="ti tabler-search search-icon"></i>
                     <input type="text" class="search-input" placeholder="Search features..."
                            @bind-value="_searchString" @bind-value:event="oninput"
                            @onkeyup="@(() => OnSearchChanged(_searchString))" />
@@ -96,7 +104,7 @@
                 @if (_canAdd)
                 {
                     <button class="add-button" @onclick="OpenAddDialog">
-                        <i class="ti ti-plus"></i><span>Add Feature</span>
+                        <i class="ti tabler-plus"></i><span>Add Feature</span>
                     </button>
                 }
             </div>
@@ -111,13 +119,15 @@
         }
         else if (_hasError)
         {
-            <div class="alert alert-danger m-3" role="alert"><i class="ti ti-alert-circle me-2"></i>@_errorMessage</div>
+                <div class="alert alert-danger m-3" role="alert"><i class="ti tabler-alert-circle me-2"></i>@_errorMessage</div>
         }
         else if (_pagedFeatures != null && _pagedFeatures.Any())
         {
             <table class="feature-table">
                 <thead>
                     <tr>
+                                                   <th class="plusHeading"></th>
+
                         <th style="width: 80px;">No.</th>
                         <th @onclick="@(() => ToggleSort("name"))">Feature Name</th>
                         <th @onclick="@(() => ToggleSort("description"))">Description</th>
@@ -130,12 +140,28 @@
                     @foreach (var feature in _pagedFeatures)
                     {
                         <tr>
+                                <td class="details-control" @onclick="@(() => ShowDetails(feature))">
+                                    <div class="plus" style="border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-sizing: content-box;
+                border: 2px solid var(--bs-paper-bg);
+                background-color: var(--bs-primary);
+                block-size: .85rem;
+                box-shadow: 0 0 3px var(--bs-gray-800);
+                color: var(--bs-white);    width: 17px;
+    height: 17px;">
+                                        <i class="ti tabler-plus"></i>
+                                    </div>
+                                </td>
+
                             <td class="serial-number">@GetGlobalSerialNumber(feature)</td>
                             <td class="feature-name">@feature.Name</td>
                             <td class="description-text">@TruncateDescription(feature.Description)</td>
                             <td>@(feature.RouteUrl ?? "-")</td>
                             <td class="text-center">
-                                <span class="badge @(feature.IsMainMenu ? "bg-success" : "bg-secondary")">
+                                    <span class="badge @(feature.IsMainMenu ? "bg-success-gradient" : "bg-danger-gradient")">
                                     @(feature.IsMainMenu ? "Yes" : "No")
                                 </span>
                             </td>
@@ -143,15 +169,15 @@
                                 <div class="action-buttons">
                                     @if (_canView)
                                     {
-                                        <button class="action-btn view-btn" @onclick="@(() => OpenViewDialog(feature))" title="View"><i class="ti ti-eye"></i></button>
+                                        <button class="action-btn view-btn" @onclick="@(() => OpenViewDialog(feature))" title="View"><i class="ti tabler-eye"></i></button>
                                     }
                                     @if (_canEdit)
                                     {
-                                        <button class="action-btn edit-btn" @onclick="@(() => OpenEditDialog(feature))" title="Edit"><i class="ti ti-edit"></i></button>
+                                        <button class="action-btn edit-btn" @onclick="@(() => OpenEditDialog(feature))" title="Edit"><i class="ti tabler-edit"></i></button>
                                     }
                                     @if (_canDelete)
                                     {
-                                        <button class="action-btn delete-btn" @onclick="@(() => DeleteFeature(feature))" title="Delete"><i class="ti ti-trash"></i></button>
+                                        <button class="action-btn delete-btn" @onclick="@(() => DeleteFeature(feature))" title="Delete"><i class="ti tabler-trash"></i></button>
                                     }
                                 </div>
                             </td>
@@ -163,8 +189,8 @@
             <div class="pagination-container">
                 <div class="pagination-info">Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries</div>
                 <div class="pagination-buttons">
-                    <button class="page-btn" @onclick="@(() => GoToPage(1))" disabled="@(_currentPage == 1)"><i class="ti ti-chevrons-left"></i></button>
-                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage - 1))" disabled="@(_currentPage == 1)"><i class="ti ti-chevron-left"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(1))" disabled="@(_currentPage == 1)"><i class="ti tabler-chevrons-left"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage - 1))" disabled="@(_currentPage == 1)"><i class="ti tabler-chevron-left"></i></button>
                     @if (GetStartPage() > 1) { <span class="ellipsis">...</span> }
                     @for (int i = GetStartPage(); i <= GetEndPage(); i++)
                     {
@@ -172,17 +198,52 @@
                         <button class="page-btn @(pageNum == _currentPage ? "active" : "")" @onclick="@(() => GoToPage(pageNum))">@pageNum</button>
                     }
                     @if (GetEndPage() < _totalPages) { <span class="ellipsis">...</span> }
-                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage + 1))" disabled="@(_currentPage >= _totalPages)"><i class="ti ti-chevron-right"></i></button>
-                    <button class="page-btn" @onclick="@(() => GoToPage(_totalPages))" disabled="@(_currentPage >= _totalPages)"><i class="ti ti-chevrons-right"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage + 1))" disabled="@(_currentPage >= _totalPages)"><i class="ti tabler-chevron-right"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_totalPages))" disabled="@(_currentPage >= _totalPages)"><i class="ti tabler-chevrons-right"></i></button>
                 </div>
             </div>
         }
         else
         {
-            <div class="alert alert-info m-3" role="alert"><i class="ti ti-info-circle me-2"></i>No features found.</div>
-        }
+                <tr>
+                    <td colspan="4">
+                        <div class="no-data">
+                            <i class="ti tabler-folder-off"></i>
+                            <p style="margin-top: 12px; font-size: 14px;">No Features found</p>
+                        </div>
+                    </td>
+                </tr>
+            }
     </div>
+}
 </div>
+
+@if (showPopup && selectedFeature != null)
+{
+  
+     <div class="modal-backdrop show" @onclick:stopPropagation="true"></div>
+    <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
+        <div class="modal-dialog modal-dialog-top">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+Features Details                       
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="closeSelectFeatures"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                    <p><b>Feature Name:</b> @selectedFeature.Name</p>
+                    <p><b>Description:</b> @selectedFeature.Description</p>
+                    <p><b>Route:</b> @selectedFeature.RouteUrl</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+
 
 <FeatureFormDialog IsOpen="@_isDialogOpen" IsEditMode="@_isEditMode" IsSaving="@_isSaving" FormModel="@_featureModel" ParentFeatures="@_features" OnCancel="@CloseDialog" OnSubmit="@HandleSubmit" />
 <FeatureDetailsOffcanvas IsOpen="@_isOffcanvasOpen" Feature="@_selectedFeature" OnClose="@CloseOffcanvas" />
@@ -197,6 +258,25 @@
     private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "name", _sortDirection = "asc";
     private int _currentPage = 1, _pageSize = 10, _totalItems = 0, _totalPages = 1;
     private bool _canView, _canAdd, _canEdit, _canDelete;
+
+    bool showPopup = false;
+    FeatureDto? selectedFeature;
+
+    void closeSelectFeatures()
+    {
+        showPopup=false;
+    }
+
+    void ShowDetails(FeatureDto feature)  
+    {
+        selectedFeature = feature;
+        showPopup = true;
+    }
+
+    void ClosePopup()
+    {
+        showPopup = false;
+    }
 
     protected override async Task OnInitializedAsync()
     {

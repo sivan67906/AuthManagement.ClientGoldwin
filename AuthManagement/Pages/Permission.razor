@@ -66,21 +66,29 @@
     .ellipsis { padding: 0 8px; color: #999; }
 </style>
 
-<div class="container-fluid mt-4">
-    <div class="page-header mb-3">
-        <div>
-            <h4 class="page-title">Permission Management</h4>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="/" class="breadcrumb-link"><i class="ti ti-home"></i><span>Home</span></a>
-                        <span class="breadcrumb-separator">/</span>
-                    </li>
-                    <li class="breadcrumb-item breadcrumb-current">Permissions</li>
-                </ol>
-            </nav>
-        </div>
+<div class="container-xxl flex-grow-1 container-p-y">
+    @if (_isLoading)
+    {
+        <LoadingSpinner FullPage="true" />
+    }
+    else{
+     <div class="page-header">
+        <h1 class="page-title">Permission Management</h1>
+        <nav>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="#" class="breadcrumb-link">
+                        <i class="ti tabler-home"></i>Home
+                    </a>
+                    <span class="breadcrumb-separator">></span>
+                </li>
+                <li class="">
+                    <span class="breadcrumb-current">Permissions</span>
+                </li>
+            </ul>
+        </nav>
     </div>
+
 
     <div class="permission-container">
         <div class="toolbar-container">
@@ -89,7 +97,7 @@
             </div>
             <div class="toolbar-right">
                 <div class="search-box">
-                    <i class="ti ti-search search-icon"></i>
+                    <i class="ti tabler-search search-icon"></i>
                     <input type="text" class="search-input" placeholder="Search permissions..."
                            @bind-value="_searchString" @bind-value:event="oninput"
                            @onkeyup="@(() => OnSearchChanged(_searchString))" />
@@ -97,7 +105,7 @@
                 @if (_canAdd)
                 {
                     <button class="add-button" @onclick="OpenAddDialog">
-                        <i class="ti ti-plus"></i><span>Add Permission</span>
+                        <i class="ti tabler-plus"></i><span>Add Permission</span>
                     </button>
                 }
             </div>
@@ -112,13 +120,15 @@
         }
         else if (_hasError)
         {
-            <div class="alert alert-danger m-3" role="alert"><i class="ti ti-alert-circle me-2"></i>@_errorMessage</div>
+            <div class="alert alert-danger m-3" role="alert"><i class="ti tabler-alert-circle me-2"></i>@_errorMessage</div>
         }
         else if (_pagedPermissions != null && _pagedPermissions.Any())
         {
             <table class="permission-table">
                 <thead>
                     <tr>
+                            <th class="plusHeading"></th>
+
                         <th style="width: 80px;">No.</th>
                         <th @onclick="@(() => ToggleSort("name"))">Permission Name</th>
                         <th @onclick="@(() => ToggleSort("description"))">Description</th>
@@ -130,11 +140,27 @@
                     @foreach (var permission in _pagedPermissions)
                     {
                         <tr>
+                                <td class="details-control" @onclick="@(() => ShowDetails(permission))">
+                                    <div class="plus" style="border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-sizing: content-box;
+                        border: 2px solid var(--bs-paper-bg);
+                        background-color: var(--bs-primary);
+                        block-size: .85rem;
+                        box-shadow: 0 0 3px var(--bs-gray-800);
+                        color: var(--bs-white);    width: 17px;
+            height: 17px;">
+                                        <i class="ti tabler-plus"></i>
+                                    </div>
+                                </td>
+
                             <td class="serial-number">@GetGlobalSerialNumber(permission)</td>
                             <td class="permission-name">@permission.Name</td>
                             <td class="description-text">@TruncateDescription(permission.Description)</td>
                             <td class="text-center">
-                                <span class="badge @(permission.IsActive ? "bg-success" : "bg-secondary")">
+                                    <span class="badge @(permission.IsActive ? "bg-purple-gradient" : "bg-orange-gradient")">
                                     @(permission.IsActive ? "Active" : "Inactive")
                                 </span>
                             </td>
@@ -142,15 +168,15 @@
                                 <div class="action-buttons">
                                     @if (_canView)
                                     {
-                                        <button class="action-btn view-btn" @onclick="@(() => OpenViewDialog(permission))" title="View"><i class="ti ti-eye"></i></button>
+                                        <button class="action-btn view-btn" @onclick="@(() => OpenViewDialog(permission))" title="View"><i class="ti tabler-eye"></i></button>
                                     }
                                     @if (_canEdit)
                                     {
-                                        <button class="action-btn edit-btn" @onclick="@(() => OpenEditDialog(permission))" title="Edit"><i class="ti ti-edit"></i></button>
+                                        <button class="action-btn edit-btn" @onclick="@(() => OpenEditDialog(permission))" title="Edit"><i class="ti tabler-edit"></i></button>
                                     }
                                     @if (_canDelete)
                                     {
-                                        <button class="action-btn delete-btn" @onclick="@(() => DeletePermission(permission))" title="Delete"><i class="ti ti-trash"></i></button>
+                                        <button class="action-btn delete-btn" @onclick="@(() => DeletePermission(permission))" title="Delete"><i class="ti tabler-trash"></i></button>
                                     }
                                 </div>
                             </td>
@@ -162,8 +188,8 @@
             <div class="pagination-container">
                 <div class="pagination-info">Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries</div>
                 <div class="pagination-buttons">
-                    <button class="page-btn" @onclick="@(() => GoToPage(1))" disabled="@(_currentPage == 1)"><i class="ti ti-chevrons-left"></i></button>
-                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage - 1))" disabled="@(_currentPage == 1)"><i class="ti ti-chevron-left"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(1))" disabled="@(_currentPage == 1)"><i class="ti tabler-chevrons-left"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage - 1))" disabled="@(_currentPage == 1)"><i class="ti tabler-chevron-left"></i></button>
                     @if (GetStartPage() > 1) { <span class="ellipsis">...</span> }
                     @for (int i = GetStartPage(); i <= GetEndPage(); i++)
                     {
@@ -171,8 +197,8 @@
                         <button class="page-btn @(pageNum == _currentPage ? "active" : "")" @onclick="@(() => GoToPage(pageNum))">@pageNum</button>
                     }
                     @if (GetEndPage() < _totalPages) { <span class="ellipsis">...</span> }
-                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage + 1))" disabled="@(_currentPage >= _totalPages)"><i class="ti ti-chevron-right"></i></button>
-                    <button class="page-btn" @onclick="@(() => GoToPage(_totalPages))" disabled="@(_currentPage >= _totalPages)"><i class="ti ti-chevrons-right"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_currentPage + 1))" disabled="@(_currentPage >= _totalPages)"><i class="ti tabler-chevron-right"></i></button>
+                    <button class="page-btn" @onclick="@(() => GoToPage(_totalPages))" disabled="@(_currentPage >= _totalPages)"><i class="ti tabler-chevrons-right"></i></button>
                 </div>
             </div>
         }
@@ -181,10 +207,40 @@
             <div class="alert alert-info m-3" role="alert"><i class="ti ti-info-circle me-2"></i>No permissions found.</div>
         }
     </div>
+    }
 </div>
 
 <PermissionFormDialog IsOpen="@_isDialogOpen" IsEditMode="@_isEditMode" IsSaving="@_isSaving" FormModel="@_permissionModel" OnCancel="@CloseDialog" OnSubmit="@HandleSubmit" />
 <PermissionDetailsOffcanvas IsOpen="@_isOffcanvasOpen" Permission="@_selectedPermission" OnClose="@CloseOffcanvas" />
+
+
+@if (showPopup && selectedFeature != null)
+{
+  
+     <div class="modal-backdrop show" @onclick:stopPropagation="true"></div>
+    <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
+        <div class="modal-dialog modal-dialog-top">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+Permission Details                       
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="closeSelectFeatures"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                    <p><b>Permission Name:</b> @selectedFeature.Name</p>
+                    <p><b>Description:</b> @selectedFeature.Description</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+
+
+
 
 @code {
     private List<PermissionDto> _permissions = new();
@@ -196,6 +252,28 @@
     private string _errorMessage = string.Empty, _searchString = string.Empty, _sortColumn = "name", _sortDirection = "asc";
     private int _currentPage = 1, _pageSize = 10, _totalItems = 0, _totalPages = 1;
     private bool _canView, _canAdd, _canEdit, _canDelete;
+
+
+     bool showPopup = false;
+PermissionDto? selectedFeature;
+
+ void closeSelectFeatures()
+ {
+     showPopup=false;
+ }
+
+    void ShowDetails(PermissionDto feature)
+ {
+     selectedFeature = feature;
+     showPopup = true;
+ }
+
+ void ClosePopup()
+ {
+     showPopup = false;
+ }
+
+
 
     protected override async Task OnInitializedAsync()
     {

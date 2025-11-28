@@ -301,23 +301,40 @@
         }
 
         .action-btn:hover {
-            transform: scale(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
-        .action-btn.view-btn:hover {
-            background: #e3f2fd;
-            color: #1976d2;
+        .action-btn.view-btn {
+            background-color: #e3f2fd;
+            color: #2196f3;
         }
 
-        .action-btn.edit-btn:hover {
-            background: #fff3e0;
-            color: #f57c00;
+            .action-btn.view-btn:hover {
+                background-color: #2196f3;
+                color: white;
+            }
+
+        .action-btn.edit-btn {
+            background-color: #fff3e0;
+            color: #ff9800;
         }
 
-        .action-btn.delete-btn:hover {
-            background: #ffebee;
-            color: #d32f2f;
+            .action-btn.edit-btn:hover {
+                background-color: #ff9800;
+                color: white;
+            }
+
+        .action-btn.delete-btn {
+            background-color: #ffebee;
+            color: #f44336;
         }
+
+            .action-btn.delete-btn:hover {
+                background-color: #f44336;
+                color: white;
+            }
+
 
     /* Pagination */
     .pagination-container {
@@ -468,24 +485,27 @@
 </style>
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    <!-- Page Header -->
-    <div class="page-header mb-4">
-        <div>
-            <h4 class="page-title">Role Department Mapping</h4>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="/" class="breadcrumb-link">
-                            <i class="ti tabler-home"></i> Home
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <span class="breadcrumb-separator">/</span>
-                    </li>
-                    <li class="breadcrumb-item breadcrumb-current">Role Department Mapping</li>
-                </ol>
-            </nav>
-        </div>
+    @if (_isLoading)
+    {
+        <LoadingSpinner FullPage="true" />
+    }
+    else{
+    <div class="page-header">
+        <h1 class="page-title">Role Department Mapping</h1>
+        <nav>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item">
+                  
+                    <a href="#" class="breadcrumb-link">
+                        <i class="ti tabler-home"></i>Home
+                    </a>
+                    <span class="breadcrumb-separator">></span>
+                </li>
+                <li class="">
+                    <span class="breadcrumb-current">Role Department Mapping</span>
+                </li>
+            </ul>
+        </nav>
     </div>
 
     <!-- Main Content Card -->
@@ -536,6 +556,8 @@
             <table class="mapping-table">
                 <thead>
                     <tr>
+                            <th class="plusHeading"></th>
+
                         <th class="sortable" @onclick='() => ToggleSort("no")'>
                             NO.
                             <span class="sort-indicator">
@@ -564,6 +586,22 @@
                     @foreach (var mapping in _pagedMappings)
                     {
                         <tr>
+                                <td class="details-control" @onclick="@(() => ShowDetails(mapping))">
+                                    <div class="plus" style="border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-sizing: content-box;
+                        border: 2px solid var(--bs-paper-bg);
+                        background-color: var(--bs-primary);
+                        block-size: .85rem;
+                        box-shadow: 0 0 3px var(--bs-gray-800);
+                        color: var(--bs-white);    width: 17px;
+            height: 17px;">
+                                        <i class="ti tabler-plus"></i>
+                                    </div>
+                                </td>
+
                             <td><span class="serial-number">@GetGlobalSerialNumber(mapping)</span></td>
                             <td><span class="role-name">@mapping.RoleName</span></td>
                             <td>
@@ -579,7 +617,7 @@
                                     {
                                         <button class="action-btn view-btn"
                                                 @onclick="() => OpenViewDialog(mapping)"
-                                                title="View Details">
+                                                title="View">
                                             <i class="ti tabler-eye"></i>
                                         </button>
                                     }
@@ -612,15 +650,7 @@
                     Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
                 </div>
                 <div class="pagination-controls">
-                    <div class="page-size-selector">
-                        <label>Show</label>
-                        <select @bind="_pageSize" @bind:after="() => { _currentPage = 1; UpdateFilteredMappings(); }">
-                            <option value="10">10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
-                    </div>
+                   
                     <div class="pagination-buttons">
                         <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
                             <i class="ti tabler-chevrons-left"></i>
@@ -658,6 +688,7 @@
             </div>
         }
     </div>
+}
 </div>
 
 <!-- Add/Edit Dialog -->
@@ -674,6 +705,43 @@
 <RoleDepartmentMappingDetailsOffcanvas IsOpen="@_isOffcanvasOpen"
                                         Mapping="@_selectedMapping"
                                         OnClose="@CloseOffcanvas" />
+
+                                        @if (showPopup && selectedFeature != null)
+{
+  
+     <div class="modal-backdrop show" @onclick:stopPropagation="true"></div>
+    <div class="modal show d-block" tabindex="-1" @onclick:stopPropagation="true">
+        <div class="modal-dialog modal-dialog-top">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+Role Department Mapping                       
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="closeSelectFeatures"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                    <p><b>Role Name:</b> @selectedFeature.RoleName</p>
+                    <div class="d-flex gap-2 align-items-center">
+                        <p><b>Department Name:</b></p>
+
+                        <span class="department-badge">@selectedFeature.DepartmentName</span>
+                        @if (selectedFeature.IsPrimary)
+                        {
+                            <span class="primary-badge">Primary</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+
+
+
+
 
 @code {
     private List<RoleDepartmentMappingDto> _mappings = new();
@@ -706,6 +774,28 @@
     private bool _canCreate = false;
     private bool _canEdit = false;
     private bool _canDelete = false;
+
+
+     bool showPopup = false;
+RoleDepartmentMappingDto? selectedFeature;
+
+ void closeSelectFeatures()
+ {
+     showPopup=false;
+ }
+
+    void ShowDetails(RoleDepartmentMappingDto feature)
+ {
+     selectedFeature = feature;
+     showPopup = true;
+ }
+
+ void ClosePopup()
+ {
+     showPopup = false;
+ }
+
+
 
     protected override async Task OnInitializedAsync()
     {

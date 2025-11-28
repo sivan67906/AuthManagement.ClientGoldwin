@@ -7,7 +7,7 @@
         <div class="offcanvas-header">
             <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
                 <div class="avatar-container">
-                    <i class="ti ti-sparkles" style="font-size: 32px; color: white;"></i>
+                    <i class="ti tabler-sparkles" style="font-size: 32px; color: white;"></i>
                 </div>
                 <div style="flex: 1;">
                     <h5 style="margin: 0; font-weight: 600; font-size: 20px;">@Feature?.Name</h5>
@@ -29,7 +29,7 @@
                     @if (!string.IsNullOrEmpty(Feature?.RouteUrl))
                     {
                         <div class="detail-item">
-                            <div class="detail-icon"><i class="ti ti-route" style="color: #667eea;"></i></div>
+                            <div class="detail-icon"><i class="ti tabler-route" style="color: #667eea;"></i></div>
                             <div class="detail-content">
                                 <div class="detail-label">Route URL</div>
                                 <div class="detail-value">@Feature.RouteUrl</div>
@@ -39,7 +39,7 @@
                     @if (!string.IsNullOrEmpty(Feature?.ParentFeatureName))
                     {
                         <div class="detail-item">
-                            <div class="detail-icon"><i class="ti ti-hierarchy" style="color: #667eea;"></i></div>
+                            <div class="detail-icon"><i class="ti tabler-hierarchy" style="color: #667eea;"></i></div>
                             <div class="detail-content">
                                 <div class="detail-label">Parent Feature</div>
                                 <div class="detail-value">@Feature.ParentFeatureName</div>
@@ -47,23 +47,23 @@
                         </div>
                     }
                     <div class="detail-item">
-                        <div class="detail-icon"><i class="ti ti-number" style="color: #667eea;"></i></div>
+                        <div class="detail-icon"><i class="ti tabler-number" style="color: #667eea;"></i></div>
                         <div class="detail-content">
                             <div class="detail-label">Display Order / Level</div>
                             <div class="detail-value">@Feature?.DisplayOrder / Level @Feature?.Level</div>
                         </div>
                     </div>
-                    <div class="detail-item">
-                        <div class="detail-icon"><i class="ti ti-calendar" style="color: #667eea;"></i></div>
+                    @* <div class="detail-item">
+                        <div class="detail-icon"><i class="ti tabler-calendar" style="color: #667eea;"></i></div>
                         <div class="detail-content">
                             <div class="detail-label">Created At</div>
                             <div class="detail-value">@Feature?.CreatedAt.ToString("MMM dd, yyyy HH:mm")</div>
                         </div>
-                    </div>
+                    </div> *@
                     @if (Feature?.UpdatedAt != null)
                     {
                         <div class="detail-item">
-                            <div class="detail-icon"><i class="ti ti-refresh" style="color: #667eea;"></i></div>
+                            <div class="detail-icon"><i class="ti tabler-refresh" style="color: #667eea;"></i></div>
                             <div class="detail-content">
                                 <div class="detail-label">Last Updated</div>
                                 <div class="detail-value">@Feature.UpdatedAt.Value.ToString("MMM dd, yyyy HH:mm")</div>
@@ -71,7 +71,7 @@
                         </div>
                     }
                     <div class="detail-item">
-                        <div class="detail-icon"><i class="ti ti-circle-check" style="color: @(Feature?.IsActive == true ? "#10b981" : "#ef4444");"></i></div>
+                        <div class="detail-icon"><i class="ti tabler-circle-check" style="color: @(Feature?.IsActive == true ? "#10b981" : "#ef4444");"></i></div>
                         <div class="detail-content">
                             <div class="detail-label">Status</div>
                             <div><span class="status-badge @(Feature?.IsActive == true ? "status-active" : "status-inactive")">@(Feature?.IsActive == true ? "Active" : "Inactive")</span></div>

@@ -18,7 +18,7 @@
                     </svg>
                 </span>
             </span>
-            <span class="app-brand-text demo menu-text fw-bold ms-3">Auth System</span>
+            <span class="app-brand-text demo menu-text fw-bold ms-3">Vuexy</span>
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto" @onclick="ToggleMenuPin" id="menu-toggle-icon">
@@ -50,12 +50,18 @@
                         {
                             <!-- Main Menu with children - HAS menu-toggle class and dynamic icon -->
                             <li class="menu-item @(IsMenuOpen(mainMenu.Id) ? "open" : "")">
-                                <a href="javascript:void(0);" class="menu-link menu-toggle" @onclick="() => ToggleMenu(mainMenu.Id)">
+                                <a href="javascript:void(0);" class="menu-link menu-toggle" @onclick="() => ToggleMenu(mainMenu.Id)"
+                                   style="    display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-left: auto;">
                                     <i class="menu-icon icon-base ti @GetIconClass(mainMenu.Icon)"></i>
                                     <div data-i18n="@mainMenu.Title">@mainMenu.Title</div>
                                     @if (GetMenuPageCount(mainMenu) > 0)
                                     {
-                                        <div class="badge text-bg-primary rounded-pill ms-auto">@GetMenuPageCount(mainMenu)</div>
+                                        <div class="badge text-bg-primary rounded-pill ms-auto">
+                                            @GetMenuPageCount(mainMenu)
+                                        </div>
                                     }
                                 </a>
                                 <ul class="menu-sub">
@@ -75,7 +81,10 @@
                                         {
                                             <!-- Submenu with children - HAS menu-toggle class and dynamic icon -->
                                             <li class="menu-item @(IsMenuOpen(child.Id) ? "open" : "")">
-                                                <a href="javascript:void(0);" class="menu-link menu-toggle" @onclick="() => ToggleMenu(child.Id)">
+                                                <a href="javascript:void(0);" class="menu-link menu-toggle" @onclick="() => ToggleMenu(child.Id)"
+                                                   style="   
+                                        display: flex;    margin-left: auto;
+                                        align-items: center;">
                                                     <i class="menu-icon icon-base ti @GetIconClass(child.Icon)"></i>
                                                     <div data-i18n="@child.Title">@child.Title</div>
                                                 </a>
@@ -85,7 +94,10 @@
                                                         <!-- Page link - NO icon, NO menu-toggle class -->
                                                         <!-- Circle will be added via CSS ::before -->
                                                         <li class="menu-item @(IsActivePage(pageItem.Url) ? "active" : "")">
-                                                            <a href="@pageItem.Url" class="menu-link" @onclick="() => NavigateToPage(pageItem.Url)" @onclick:preventDefault="true">
+                                                            <a href="@pageItem.Url" class="menu-link" @onclick="() => NavigateToPage(pageItem.Url)" @onclick:preventDefault="true"
+                                                               style="
+                                                                display: flex;    margin-left: auto;
+                                                                align-items: center;">
                                                                 <div data-i18n="@pageItem.Title">@pageItem.Title</div>
                                                             </a>
                                                         </li>
