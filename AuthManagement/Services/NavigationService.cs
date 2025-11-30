@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using AuthManagement.Models;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace AuthManagement.Services;
 
@@ -12,6 +13,7 @@ public class NavigationService : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<NavigationService> _logger;
+    private readonly AuthenticationStateProvider _authStateProvider;
     private List<NavigationTreeNode> _navigationTree = new();
     private bool _isLoaded = false;
     private DateTime? _lastLoadTime;
@@ -22,10 +24,14 @@ public class NavigationService : IDisposable
 
     public event Action? OnNavigationChanged;
 
-    public NavigationService(HttpClient httpClient, ILogger<NavigationService> logger)
+    public NavigationService(
+        HttpClient httpClient, 
+        ILogger<NavigationService> logger,
+        AuthenticationStateProvider authStateProvider)
     {
         _httpClient = httpClient;
         _logger = logger;
+        _authStateProvider = authStateProvider;
     }
 
     public List<NavigationTreeNode> NavigationTree => _navigationTree;
@@ -95,8 +101,39 @@ public class NavigationService : IDisposable
             _logger.LogInformation("Loading navigation from API...");
             var startTime = DateTime.UtcNow;
 
-            // Use GetFromJsonAsync for better performance
-            var apiResponse = await _httpClient.GetFromJsonAsync<ApiResponse<List<MenuItemDto>>>("/menu/user-menus");
+            // CRITICAL FIX: Get token directly from the auth provider and attach it to this specific request
+            // This bypasses any message handler scope issues
+            string? token = null;
+            if (_authStateProvider is JwtAuthenticationStateProvider jwtProvider)
+            {
+                token = await jwtProvider.GetTokenAsync();
+                _logger.LogInformation("[NAVIGATION] Token retrieved for menu request. Has token: {HasToken}, Length: {Length}", 
+                    !string.IsNullOrWhiteSpace(token), token?.Length ?? 0);
+            }
+
+            // Create a request message with the Authorization header explicitly set
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "/menu/user-menus");
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                _logger.LogInformation("[NAVIGATION] Authorization header attached to menu request");
+            }
+            else
+            {
+                _logger.LogWarning("[NAVIGATION] No token available for menu request!");
+            }
+
+            // Send the request with explicit authorization header
+            var response = await _httpClient.SendAsync(requestMessage);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError("[NAVIGATION] Menu request failed with status: {StatusCode}", response.StatusCode);
+                throw new HttpRequestException($"Response status code does not indicate success: {(int)response.StatusCode} ({response.ReasonPhrase}).");
+            }
+
+            var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<List<MenuItemDto>>>();
+
 
             if (apiResponse?.Success == true && apiResponse.Data != null)
             {

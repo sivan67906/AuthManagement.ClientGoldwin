@@ -18,7 +18,7 @@
     <div class="layout-container">
         <!-- Left Sidebar Navigation Menu -->
         <DynamicNavMenu />
-        
+
         <!-- Layout Page -->
         <div class="layout-page">
             <!-- Top Navbar -->
@@ -75,7 +75,7 @@
 
 @code {
     private bool _isDisposed = false;
-    
+
     protected override void OnInitialized()
     {
         AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
@@ -97,7 +97,7 @@
             }
         }
     }
- 
+
     private void OnAuthenticationStateChanged(Task<AuthenticationState> task)
     {
         if (_isDisposed) return;

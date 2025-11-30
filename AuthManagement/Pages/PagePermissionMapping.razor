@@ -23,7 +23,7 @@
     }
 
     .page-title {
-        font-size: 22px;
+        font-size: 1.125rem;
         font-weight: 600;
         color: #333;
         margin: 0;
@@ -33,7 +33,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 13px;
+        font-size: 15px;
         color: #666;
         margin: 0;
         padding: 0;
@@ -68,6 +68,9 @@
         background: white;
         border-radius: 8px;
         overflow: hidden;
+        padding-left: 21px;
+        padding-right: 21px;
+        padding-bottom: 21px;
     }
 
     /* Toolbar */
@@ -75,9 +78,9 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 14px 20px;
+        padding: 14px 0px;
         background: white;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid #00000014;
         flex-wrap: wrap;
         gap: 16px;
     }
@@ -87,12 +90,24 @@
         align-items: center;
     }
 
+    .toolbar-left::before {
+    content: "";
+    height: 21px;
+    width: 0.2rem;
+    inset-block-start: 0.15rem;
+    inset-inline-start: -0.65rem;
+    background: linear-gradient(to bottom, #26bf9491 50%, #97959e8a 50%);
+    border-radius: 0.5rem;
+}
+
+
     .mappings-list-label {
         font-size: 14px;
         font-weight: 600;
         color: #333;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        padding-left: 7px;
     }
 
     .toolbar-right {
@@ -111,8 +126,11 @@
         width: 100%;
         padding: 8px 12px 8px 36px;
         border: 1px solid #d9d9e3;
-        border-radius: 6px;
         font-size: 14px;
+        padding-left: 39px;
+        border-radius: 0.25rem;
+        padding-top: 5px;
+        padding-bottom: 7px;
     }
 
         .search-input:focus {
@@ -131,33 +149,33 @@
     }
 
     .add-button {
-        background-color: #7c3aed;
+        background-color: var(--bs-primary) !important;
         color: white;
         border: none;
-        padding: 8px 20px;
-        border-radius: 6px;
-        font-size: 14px;
         font-weight: 500;
-        cursor: pointer;
+        cursor: pointer !important;
         display: flex;
         align-items: center;
         gap: 6px;
-        transition: background-color 0.2s;
         white-space: nowrap;
+        font-size: 0.75rem;
+        padding: 0.42rem 0.5rem !important;
+        border-radius: 0.25rem;
     }
 
-        .add-button:hover {
+        /* .add-button:hover {
             background-color: #6d28d9;
-        }
+        } */
 
         .add-button i {
-            font-size: 18px;
+            font-size: 14px;
         }
 
     /* Table */
     .mapping-table {
         width: 100%;
         border-collapse: collapse;
+        border: 1px solid #80808054;
     }
 
         .mapping-table thead {
@@ -165,13 +183,13 @@
         }
 
         .mapping-table th {
-            padding: 12px 16px;
+            padding: 7px 16px;
             text-align: left;
             font-weight: 600;
             font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid #0000002e;
             cursor: pointer;
             user-select: none;
             color: black;
@@ -226,11 +244,11 @@
 
     .mapping-table tbody tr {
         transition: background-color 0.2s;
-        border-bottom: 1px solid #f8f9fa;
+        border-bottom: 1px solid #00000024;
     }
 
     .mapping-table td {
-        padding: 10px 16px;
+        padding: 5px 16px;
         font-size: 14px;
         color: #333;
     }
@@ -274,7 +292,7 @@
     }
 
         .action-btn i {
-            font-size: 18px;
+            font-size: 14px;
             display: block;
             line-height: 1;
         }
@@ -285,7 +303,7 @@
         }
 
         .action-btn.view-btn {
-            background-color: #e3f2fd;
+            background-color: #e3f2fdcf;
             color: #2196f3;
         }
 
@@ -295,9 +313,10 @@
             }
 
         .action-btn.edit-btn {
-            background-color: #fff3e0;
+            background-color: #fff3e0ad;
             color: #ff9800;
         }
+
 
             .action-btn.edit-btn:hover {
                 background-color: #ff9800;
@@ -305,23 +324,31 @@
             }
 
         .action-btn.delete-btn {
-            background-color: #ffebee;
+            background-color: #ffebee94;
             color: #f44336;
         }
+
 
             .action-btn.delete-btn:hover {
                 background-color: #f44336;
                 color: white;
             }
+
     /* Pagination */
     .pagination-container {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
-        padding: 16px 20px;
+        padding: 13px 0px;
         background: white;
-        border-top: 1px solid #f0f0f0;
+        border-left: 1px solid #80808047;
+        margin-bottom: 1px;
+        border-right: 1px solid #80808047;
+        border-bottom: 1px solid #80808047;
     }
+
+
+
 
     .pagination-info {
         font-size: 14px;
@@ -361,13 +388,12 @@
     }
 
     .page-btn {
-        min-width: 32px;
-        height: 32px;
+        min-width: 48px;
+        height: 48px;
         padding: 0 8px;
-        border: 1px solid #d9d9e3;
-        background: white;
-        border-radius: 4px;
-        font-size: 14px;
+        border: 1px solid #d9d9e373;
+        border-radius: 50%;
+        font-size: 18px;
         cursor: pointer;
         transition: all 0.2s;
         color: #333;
@@ -375,8 +401,8 @@
 
         .page-btn:hover:not(:disabled) {
             background: #f5f5f5;
-            border-color: #7c3aed;
-            color: #7c3aed;
+            border-color: var(--bs-primary);
+            color: var(--bs-primary);
         }
 
         .page-btn:disabled {
@@ -385,10 +411,12 @@
         }
 
         .page-btn.active {
-            background: #7c3aed;
             color: white;
-            border-color: #7c3aed;
+            border-color: var(--bs-primary);
+            font-weight: 700;
+            background: var(--bs-primary);
         }
+
 
     /* Loading and Error States */
     .loading-container {
@@ -461,7 +489,7 @@
     }
 </style>
 
-<div class="container-xxl flex-grow-1 container-p-y">
+<div class="flex-grow-1">
     @if (_isLoading)
     {
         <LoadingSpinner FullPage="true" />
@@ -616,39 +644,70 @@
                 </tbody>
             </table>
 
-            <!-- Pagination -->
-            <div class="pagination-container">
-                <div class="pagination-info">
-                    Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
-                </div>
-                <div class="pagination-controls">
-                   
-                    <div class="pagination-buttons">
-                        <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
-                            <i class="ti tabler-chevrons-left"></i>
-                        </button>
-                        <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
-                            <i class="ti tabler-chevron-left"></i>
-                        </button>
+                <div class="pagination-container">
+                    @* <div class="pagination-info">
+          Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
+      </div> *@
+                    <div class="pagination-controls">
 
-                        @for (int i = GetStartPage(); i <= GetEndPage(); i++)
-                        {
-                            var pageNum = i;
-                            <button class="page-btn @(_currentPage == pageNum ? "active" : "")"
-                                    @onclick="() => GoToPage(pageNum)">
-                                @pageNum
-                            </button>
+                        @* mobile  screen *@
+
+                        @{
+                            var range = GetMobilePageRange();
                         }
 
-                        <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
-                            <i class="ti tabler-chevron-right"></i>
-                        </button>
-                        <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
-                            <i class="ti tabler-chevrons-right"></i>
-                        </button>
+                        <div class="pagination-buttons mobile-only">
+
+                            <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
+                                <i class="bi bi-chevron-bar-left"></i>
+                            </button>
+
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
+                                <i class="ti tabler-chevron-left"></i>
+                            </button>
+
+                            <button class="page-btn active">
+                                @_currentPage
+                            </button>
+
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
+                                <i class="ti tabler-chevron-right"></i>
+                            </button>
+
+                            <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
+                                <i class="bi bi-chevron-bar-right"></i>
+                            </button>
+
+                        </div>
+
+
+
+                        <div class="pagination-buttons web-Only">
+                            <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
+                                <i class="bi bi-chevron-bar-left"></i>
+                            </button>
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
+                                <i class="ti tabler-chevron-left"></i>
+                            </button>
+
+                            @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                            {
+                                var pageNum = i;
+                                <button class="page-btn @(_currentPage == pageNum ? "active" : "")"
+                                        @onclick="() => GoToPage(pageNum)">
+                                    @pageNum
+                                </button>
+                            }
+
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
+                                <i class="ti tabler-chevron-right"></i>
+                            </button>
+                            <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
+                                <i class="bi bi-chevron-bar-right"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
         }
         else
         {
@@ -759,6 +818,24 @@ Page Permission Details
      showPopup = false;
  }
 
+
+    // pagination
+
+    private (int start, int end) GetMobilePageRange()
+    {
+        int windowSize = 2; // always show 2 page numbers
+
+        int start = _currentPage;
+        int end = _currentPage + 1;
+
+        if (end > _totalPages)
+        {
+            end = _totalPages;
+            start = Math.Max(1, end - 1);
+        }
+
+        return (start, end);
+    }
 
 
     protected override async Task OnInitializedAsync()

@@ -22,7 +22,7 @@
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto" @onclick="ToggleMenuPin" id="menu-toggle-icon">
-            <i class="icon-base ti ti-circle menu-toggle-icon align-middle"></i>
+            <i class="icon-base ti tabler-circle menu-toggle-icon align-middle"></i>
         </a>
     </div>
 
@@ -162,11 +162,13 @@
     private bool _lastAuthState = false;
     private DateTime _lastNavigationLoadAttempt = DateTime.MinValue;
     private readonly TimeSpan _minimumLoadInterval = TimeSpan.FromMilliseconds(500);
-    private SemaphoreSlim _loadSemaphore = new SemaphoreSlim(1, 1);
+    private SemaphoreSlim? _loadSemaphore = new SemaphoreSlim(1, 1);
     private string _currentUrl = string.Empty;
+    private CancellationTokenSource? _navigationCts;
 
     protected override void OnInitialized()
     {
+        _navigationCts = new CancellationTokenSource();
         AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
         NavService.OnNavigationChanged += OnNavigationChanged;
         Navigation.LocationChanged += OnLocationChanged;
@@ -175,8 +177,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && !_isDisposed)
         {
+            // Add a small delay to ensure auth state is fully initialized
+            await Task.Delay(100);
             await LoadNavigationIfAuthenticatedAsync();
             
             try
@@ -229,7 +233,7 @@
 
     private async Task LoadNavigationIfAuthenticatedAsync()
     {
-        if (_isDisposed || _isLoadingNav) return;
+        if (_isDisposed || _isLoadingNav || _loadSemaphore == null) return;
         
         var timeSinceLastAttempt = DateTime.UtcNow - _lastNavigationLoadAttempt;
         if (timeSinceLastAttempt < _minimumLoadInterval)
@@ -237,7 +241,18 @@
             return;
         }
         
-        if (!await _loadSemaphore.WaitAsync(0))
+        // Use try-catch for WaitAsync in case semaphore is being disposed
+        bool lockAcquired = false;
+        try
+        {
+            lockAcquired = await _loadSemaphore.WaitAsync(0);
+        }
+        catch (ObjectDisposedException)
+        {
+            return;
+        }
+        
+        if (!lockAcquired)
         {
             return;
         }
@@ -249,7 +264,7 @@
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var isAuthenticated = authState.User?.Identity?.IsAuthenticated ?? false;
             
-            if (!isAuthenticated || NavService.IsLoaded)
+            if (!isAuthenticated || NavService.IsLoaded || _isDisposed)
             {
                 return;
             }
@@ -268,12 +283,22 @@
             finally
             {
                 _isLoadingNav = false;
-                await InvokeAsync(StateHasChanged);
+                if (!_isDisposed)
+                {
+                    await InvokeAsync(StateHasChanged);
+                }
             }
         }
         finally
         {
-            _loadSemaphore.Release();
+            try
+            {
+                _loadSemaphore?.Release();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Semaphore was disposed while we were using it
+            }
         }
     }
 
@@ -451,9 +476,30 @@
     public void Dispose()
     {
         _isDisposed = true;
+        
+        // Cancel any ongoing navigation operations
+        _navigationCts?.Cancel();
+        
+        // Unsubscribe from events
         AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         NavService.OnNavigationChanged -= OnNavigationChanged;
         Navigation.LocationChanged -= OnLocationChanged;
-        _loadSemaphore?.Dispose();
+        
+        // Dispose semaphore with null check
+        if (_loadSemaphore != null)
+        {
+            try
+            {
+                _loadSemaphore.Dispose();
+                _loadSemaphore = null;
+            }
+            catch (ObjectDisposedException)
+            {
+                // Already disposed
+            }
+        }
+        
+        // Dispose cancellation token source
+        _navigationCts?.Dispose();
     }
 }

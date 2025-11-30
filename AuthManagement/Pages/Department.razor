@@ -25,17 +25,18 @@
     }
 
     .page-title {
-        font-size: 22px;
-        font-weight: 600;
-        color: #333;
-        margin: 0;
-    }
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+
+}
 
     .breadcrumb {
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 13px;
+        font-size: 15px;
         color: #666;
         margin: 0;
         padding: 0;
@@ -89,14 +90,24 @@
         align-items: center;
     }
 
-    .departments-list-label {
-        font-size: 14px;
-        font-weight: 600;
-        color: #333;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
+        .toolbar-left::before {
+            content: "";
+            height: 21px;
+            width: 0.2rem;
+            inset-block-start: 0.15rem;
+            inset-inline-start: -0.65rem;
+            background: linear-gradient(to bottom, #26bf9491 50%, #97959e8a 50%);
+            border-radius: 0.5rem;
+        }
 
+   .mappings-list-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-left: 7px;
+}
     .toolbar-right {
         display: flex;
         align-items: center;
@@ -111,10 +122,10 @@
 
     .search-input {
         width: 100%;
-        padding: 8px 12px 8px 36px;
+        padding: 6px 3px 6px 36px;
         border: 1px solid #d9d9e3;
         border-radius: 6px;
-        font-size: 14px;
+        font-size: 13px;
     }
 
     .search-input:focus {
@@ -133,10 +144,10 @@
     }
 
     .add-button {
-        background-color: #7c3aed;
+        background-color: var(--bs-primary);
         color: white;
         border: none;
-        padding: 8px 20px;
+        padding: 6px 12px;
         border-radius: 6px;
         font-size: 14px;
         font-weight: 500;
@@ -149,7 +160,8 @@
     }
 
     .add-button:hover {
-        background-color: #6d28d9;
+        background-color:white;
+            color: var(--bs-primary)
     }
 
     .add-button i {
@@ -240,6 +252,15 @@
         /* background-color: #f8f9fa; */
     }
 
+    .departments-list-label{
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-left: 7px;
+
+    }
     .department-table td {
         padding: 10px 16px;
         font-size: 14px;
@@ -294,8 +315,8 @@
     }
 
     .action-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        /* transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); */
     }
 
     .action-btn.view-btn {
@@ -314,8 +335,8 @@
     }
 
     .action-btn.edit-btn:hover {
-        background-color: #ff9800;
-        color: white;
+        /* background-color: #ff9800; */
+                color: #ff9800;
     }
 
     .action-btn.delete-btn {
@@ -324,66 +345,87 @@
     }
 
     .action-btn.delete-btn:hover {
-        background-color: #dc3545;
-        color: white;
+        /* background-color: #dc3545; */
+                color: #dc3545;
     }
 
     /* Pagination */
     .pagination-container {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
-        padding: 16px 24px;
+        padding: 13px 0px;
         background: white;
-        border-top: 1px solid #e9ecef;
+        border-top: 1px solid #80808040;
+        margin-bottom: 1px;
     }
 
     .pagination-info {
+        font-size: 14px;
         color: #666;
-        font-size: 13px;
     }
 
     .pagination-controls {
         display: flex;
-        gap: 4px;
         align-items: center;
+        gap: 8px;
     }
 
-    .page-button {
-        min-width: 32px;
-        height: 32px;
-        border: 1px solid #e0e0e0;
-        background-color: white;
-        color: #666;
-        border-radius: 4px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
+    .page-size-selector {
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 8px;
+        margin-right: 16px;
+    }
+
+        .page-size-selector label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .page-size-selector select {
+            padding: 4px 8px;
+            border: 1px solid #d9d9e3;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+    .pagination-buttons {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .page-btn {
+        min-width: 48px;
+        height: 48px;
+        padding: 0 8px;
+        border: 1px solid #d9d9e373;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
         transition: all 0.2s;
+        color: #333;
     }
 
-    .page-button i {
-        font-size: 16px;
-    }
+        .page-btn:hover:not(:disabled) {
+            background: #f5f5f5;
+            border-color: var(--bs-primary);
+            color: var(--bs-primary);
+        }
 
-    .page-button:hover:not(:disabled) {
-        background-color: #f5f5f5;
-        border-color: #7c3aed;
-    }
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
-    .page-button.active {
-        background-color: #7c3aed !important;
-        color: white !important;
-        border-color: #7c3aed !important;
-    }
-
-    .page-button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
+        .page-btn.active {
+            color: white;
+            border-color: var(--bs-primary);
+            font-weight: 700;
+            background: var(--bs-primary);
+        }
 
     /* No Data */
     .no-data {
@@ -416,7 +458,7 @@
     }
 </style>
 
-<div class="container-xxl flex-grow-1 container-p-y" style="">
+<div class="flex-grow-1" style="">
     @if (_isLoading)
     {
         <LoadingSpinner FullPage="true" />
@@ -448,6 +490,64 @@
             </nav>
         </div>
 
+
+        <style>
+            .card-me {
+                position: relative;
+                /* overflow: hidden; */
+                border-radius: 8px;
+            }
+
+            /* Contact content layout remains normal */
+            .contact-action {
+                position: relative;
+                z-index: 1;
+            }
+
+            /* Hover buttons (overlay) */
+            .contact-hover-buttons {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+                background: rgb(0 0 0 / 21%);
+                opacity: 0;
+                visibility: hidden;
+                transform: scale(1.05);
+                transition: all 0.25s ease-in-out;
+            }
+
+            /* Show on hover */
+            .card-me:hover .contact-hover-buttons {
+                opacity: 1;
+                visibility: visible;
+                transform: scale(1);
+            }
+
+            /* Optional overlay (fade) */
+            .contact-overlay {
+                position: absolute;
+                inset: 0;
+                /* background: rgba(0, 0, 0, 0.25); */
+                opacity: 0;
+                transition: opacity 0.25s;
+            }
+
+            .card-text{
+                color:var(--bs-primary)!important;
+            }
+
+            .card-me:hover .contact-overlay {
+                opacity: 1;
+            }
+        </style>
+
+
         <!-- Data Grid -->
         <div class="department-container">
             <!-- Toolbar -->
@@ -476,8 +576,87 @@
             </div>
 
             <!-- Table -->
-            <div style="overflow-x: auto;">
-                <table class="department-table">
+            <div >
+                <div class="card-body" style="margin-bottom: 28px;
+        padding-top: 28px;
+        padding-left: 22px;
+        padding-right: 22px;">
+                    <div class="" style="    display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(339px, 1fr));
+        gap: 20px;">
+                        @if (_pagedDepartments.Any())
+                        {
+                            @foreach (var department in _pagedDepartments)
+                            {
+                                <div class="custom-border-inline-start">
+                                    <div class="card custom-card card-me" style="border-top: 2px solid rgb(111, 8, 71) !important;">
+                                        <div class="card-body contact-action">
+                                            <!--!-->
+                                            <div class="contact-overlay"></div>
+                                            <div class="d-flex align-items-top position-relative">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-3">
+                                                        <span class="avatar avatar-xl">
+                                                            <img src="assets/img/avatars/1.png"
+                                                            alt="Melissa Jane" style="border-radius: 5px;">
+                                                        </span>
+                                                    </div><!--!-->
+                                                    <div>
+                                                        <p class="card-text text-info mb-1 fs-14 fw-semibold">@department.Name</p><!--!-->
+                                                        <div class="card-title fs-12 mb-1">@TruncateDescription(department.Description)</div>
+                                                    </div>
+                                                </div>
+                                            </div><!--!-->
+                                            <div class="d-flex align-items-center justify-content-center gap-2 contact-hover-buttons">
+                                                <button type="button" class="btn btn-sm btn-light contact-hover-btn" @onclick="@(() => OpenViewDialog(department))"
+                                                        title="View" style="background: white;">
+                                                    <!--!--><i class="ri-eye-line"></i> View Contact
+                                                </button><!--!-->
+                                                <div class="dropdown contact-hover-dropdown">
+                                                    <!--!--><button class="btn btn-sm btn-icon btn-light btn-wave waves-effect waves-light" type="button"
+                                                                    data-bs-toggle="dropdown" aria-expanded="false" style="background: white;">
+                                                        <i class="bi bi-three-dots-vertical"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu" >
+                                                        <li>
+                                                            <a class="dropdown-item" href="javascript:void(0);" style=" background-color:transparent">
+                                                                @* <!--!--><i class="ri-edit-line me-2 align-middle d-inline-block"></i>Edit *@
+                                                         
+                                                            <button class="action-btn edit-btn"
+                                                                    @onclick="@(() => OpenEditDialog(department))"
+                                                                        title="Edit" style="width: 100%;font-size:15px;background-color:transparent">
+                                                                    Edit &nbsp; &nbsp;
+                                                                <i class="ti tabler-edit"></i>
+                                                            </button>
+                                                            </a>
+                                                        </li><!--!-->
+                                                        <li>
+                                                            <a class="dropdown-item" href="javascript:void(0);" style=" background-color:transparent">
+                                                                @* <!--!--><i class="ri-delete-bin-5-line me-2 align-middle d-inline-block"></i> *@
+                                                          
+                                                            <button class="action-btn delete-btn"
+                                                                    @onclick="@(() => DeleteDepartment(department))"
+                                                                        title="Delete" style="width: 100%;font-size:15px;background-color:transparent">
+                                                                    Delete &nbsp; &nbsp;
+                                                                <i class="ti tabler-trash"></i>
+                                                            </button>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                        }
+                    </div><!--!-->
+
+                </div>
+
+
+            @*     <table class="department-table">
                     <thead>
                         <tr>
                             <th class="plusHeading"></th>
@@ -581,11 +760,11 @@
                             </tr>
                         }
                     </tbody>
-                </table>
+                </table> *@
             </div>
 
             <!-- Pagination -->
-            <div class="pagination-container">
+            @* <div class="pagination-container">
                 <div class="pagination-info">
                     Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
                 </div>
@@ -621,7 +800,77 @@
                         <i class="ti tabler-chevrons-right"></i>
                     </button>
                 </div>
+            </div> *@
+
+
+
+             <div class="pagination-container">
+                @* <div class="pagination-info">
+                    Showing @GetStartRecord() to @GetEndRecord() of @_totalItems entries
+                </div> *@
+                <div class="pagination-controls">
+                  
+                    @* mobile  screen *@
+
+                        @{
+                            var range = GetMobilePageRange();
+                        }
+
+                        <div class="pagination-buttons mobile-only">
+
+                            <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
+                                <i class="bi bi-chevron-bar-left"></i>
+                            </button>
+
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
+                                <i class="ti tabler-chevron-left"></i>
+                            </button>
+
+                            <button class="page-btn active">
+                                @_currentPage
+                            </button>
+
+                            <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
+                                <i class="ti tabler-chevron-right"></i>
+                            </button>
+
+                            <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
+                                <i class="bi bi-chevron-bar-right"></i>
+                            </button>
+
+                        </div>
+
+
+
+                    <div class="pagination-buttons web-Only">
+                        <button class="page-btn" @onclick="() => GoToPage(1)" disabled="@(_currentPage == 1)">
+                                <i class="bi bi-chevron-bar-left"></i>
+                        </button>
+                        <button class="page-btn" @onclick="() => GoToPage(_currentPage - 1)" disabled="@(_currentPage == 1)">
+                            <i class="ti tabler-chevron-left"></i>
+                        </button>
+
+                        @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                        {
+                            var pageNum = i;
+                            <button class="page-btn @(_currentPage == pageNum ? "active" : "")"
+                                    @onclick="() => GoToPage(pageNum)">
+                                @pageNum
+                            </button>
+                        }
+
+                        <button class="page-btn" @onclick="() => GoToPage(_currentPage + 1)" disabled="@(_currentPage == _totalPages)">
+                            <i class="ti tabler-chevron-right"></i>
+                        </button>
+                        <button class="page-btn" @onclick="() => GoToPage(_totalPages)" disabled="@(_currentPage == _totalPages)">
+                                <i class="bi bi-chevron-bar-right"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
+
+
+
         </div>
     }
 </div>
@@ -714,6 +963,26 @@
     void ClosePopup()
     {
         showPopup = false;
+    }
+
+
+    
+ // pagination
+
+    private (int start, int end) GetMobilePageRange()
+    {
+        int windowSize = 2; // always show 2 page numbers
+
+        int start = _currentPage;
+        int end = _currentPage + 1;
+
+        if (end > _totalPages)
+        {
+            end = _totalPages;
+            start = Math.Max(1, end - 1);
+        }
+
+        return (start, end);
     }
 
 

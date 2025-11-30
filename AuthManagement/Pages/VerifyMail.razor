@@ -1,0 +1,160 @@
+@page "/verify-mail"
+@using AuthManagement.Models
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@layout AuthLayout
+@implements IAsyncDisposable
+
+<div class="authentication-wrapper authentication-basic container-p-y">
+    <div class="authentication-inner py-6">
+        <!-- Verify Email Card -->
+        <div class="card">
+            <div class="card-body">
+                <!-- Illustration -->
+                <div class="text-center mb-6">
+                    <img src="assets/img/Authentication/auth-verify-email-illustration-light.png" 
+                         alt="Verify Email" 
+                         class="img-fluid" 
+                         style="max-width: 100px;">
+                </div>
+                <!-- /Illustration -->
+
+                <!-- Success Icon -->
+                <div class="text-center mb-2">
+                    <div class="d-inline-flex justify-content-center align-items-center rounded-circle" 
+                         style="">
+                        <i class="bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    </div>
+                </div>
+                <!-- /Success Icon -->
+
+                <!-- Content -->
+                <div class="text-center">
+                    <h4 class="mb-2">You're ready to go!</h4>
+                    <h5 class="mb-2">Check your email to begin.</h5>
+                    
+                    <p class="text-center mb-6">
+                        Please check your email <strong>'@Email'</strong>
+                        <br />
+                        and click <strong>'Activate your account'</strong> button
+                        <br />
+                        to complete your sign up.
+                    </p>
+
+                    <!-- Login Button -->
+                    <button class="btn btn-primary w-100 mb-4" @onclick="NavigateToLogin">
+                        <i class="icon-base ti tabler-login me-2"></i>
+                        Login
+                    </button>
+                    <!-- /Login Button -->
+
+                    <!-- Resend Link -->
+                    <p class="text-center">
+                        <span>Didn't receive the mail?</span>
+                        <a href="javascript:void(0);" @onclick="ResendVerificationEmail" class="@(isResending ? "disabled" : "")">
+                            @if (isResending)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                            }
+                            <span>Resend Verification Mail</span>
+                        </a>
+                    </p>
+                    <!-- /Resend Link -->
+                </div>
+                <!-- /Content -->
+            </div>
+        </div>
+        <!-- /Verify Email Card -->
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Email { get; set; }
+
+    private bool isResending = false;
+	public string? errorMessage = string.Empty;
+    [Inject] NavigationManager Navigation { get; set; } = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/main.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/popular.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/bootstrap5.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/auto-focus.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/pages-auth.js", true);
+            await JS.InvokeVoidAsync("loadScriptAndTrigger", "assets/js/toast.js", true);
+        }
+        await JS.InvokeVoidAsync("eval", "typeof initPagesAuth === 'function' && initPagesAuth();");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await JS.InvokeVoidAsync("eval", "window.destroyPagesAuth && window.destroyPagesAuth();");
+    }
+
+    private void NavigateToLogin()
+    {
+        Nav.NavigateTo("/login");
+    }
+
+    private async Task ResendVerificationEmail()
+    {
+        if (string.IsNullOrWhiteSpace(Email))
+        {
+            await JS.InvokeVoidAsync("showToast", "error", "Email address is required.");
+            return;
+        }
+
+        isResending = true;
+
+        try
+        {
+            var uri = Nav.ToAbsoluteUri(Nav.Uri);
+            var query = uri.Query;
+            var baseUri = Navigation.BaseUri.TrimEnd('/');
+
+            var requestModel = new { Email = Email, CallbackBaseUrl = $"{baseUri}/confirm-email" };
+            var response = await Http.PostAsJsonAsync("/auth/send-confirmation-email", requestModel);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                await JS.InvokeVoidAsync("showToast", "success", "Verification email has been resent successfully!");
+            }
+            else
+            {
+                if (result?.Errors != null && result.Errors.Count > 0)
+                {
+                    // Loop through all errors and combine them
+                    var errorMessages = new List<string>();
+                    foreach (var error in result.Errors)
+                    {
+                        errorMessages.Add(error);
+                    }
+                    errorMessage = string.Join(", ", errorMessages);
+                }
+                else
+                {
+                    errorMessage = result?.Message ?? "Failed to resend confirmation email. Please try again.";
+                }
+                await JS.InvokeVoidAsync("showToast", "error", errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("showToast", "error", "An error occurred while resending the email. Please try again.");
+            Console.WriteLine($"Error resending verification email: {ex.Message}");
+        }
+        finally
+        {
+            isResending = false;
+            StateHasChanged();
+        }
+    }
+}

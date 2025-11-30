@@ -1,0 +1,535 @@
+@page "/authenticator-setup"
+@using AuthManagement.Services
+@using AuthManagement.Models
+@using Microsoft.AspNetCore.Authorization
+@using System.Net.Http.Headers
+@using System.Net.Http.Json
+@using System.Web
+@attribute [Authorize]
+@inject HttpClient Http
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="authentication-wrapper authentication-basic container-p-y">
+    <div class="authentication-inner py-6" style="height: auto;">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="mb-3">
+                        <i class="bi-shield-lock-fill fs-1 text-primary"></i>
+                    </div>
+                    <h4 class="mb-1">Authenticator App Setup</h4>
+                    <p class="text-muted mb-0">Secure your account with an authenticator app</p>
+                </div>
+
+                <hr class="my-4" />
+
+                @if (isLoading)
+                {
+                    <LoadingSpinner FullPage="true" />
+                }
+                else if (isEnabled)
+                {
+                    <!-- Already Enabled State -->
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <i class="bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                        </div>
+                        <h5 class="text-success mb-3">Authenticator App is Active</h5>
+                        <p class="text-muted mb-4">
+                            Your account is protected with authenticator app two-factor authentication.
+                        </p>
+                        <button class="btn btn-outline-danger" @onclick="DisableAuthenticator" disabled="@isBusy">
+                            @if (isBusy)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            Disable Authenticator App
+                        </button>
+                    </div>
+                }
+                else if (setupData is null)
+                {
+                    <!-- Initial Setup State -->
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <img src="assets/img/Authentication/auth-two-step-illustration-light.png"
+                                 alt="Authenticator" style="max-width: 200px;" />
+                        </div>
+                        <h5 class="mb-3">Add Extra Security</h5>
+                        <p class="text-muted mb-4">
+                            Use an authenticator app like Google Authenticator, Microsoft Authenticator,
+                            or Authy to generate verification codes.
+                        </p>
+                        <div class="d-flex flex-column gap-2">
+                            <button class="btn btn-primary" @onclick="StartSetup" disabled="@isBusy">
+                                @if (isBusy)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                <i class="bi-qr-code me-2"></i>
+                                Set Up Authenticator App
+                            </button>
+                            <a href="/two-factor" class="btn btn-outline-secondary">
+                                <i class="bi-arrow-left me-2"></i>
+                                Back to Security Settings
+                            </a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Setup In Progress -->
+                    <div class="setup-steps">
+                        <!-- Step 1: Scan QR Code -->
+                        <div class="step-section mb-4">
+                            <h6 class="d-flex align-items-center mb-3">
+                                <span class="badge bg-primary rounded-circle me-2">1</span>
+                                Scan QR Code
+                            </h6>
+                            <p class="text-muted small mb-3">
+                                Open your authenticator app and scan this QR code:
+                            </p>
+                            <div class="text-center mb-3">
+                                <div class="qr-code-container p-3 bg-white rounded border d-inline-block">
+                                    @if (!string.IsNullOrEmpty(qrCodeDataUrl))
+                                    {
+                                        <img src="@qrCodeDataUrl" alt="QR Code" style="width: 200px; height: 200px;" />
+                                    }
+                                    else
+                                    {
+                                        <div style="width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
+                                            <span class="spinner-border text-primary" role="status"></span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Manual Entry -->
+                        <div class="step-section mb-4">
+                            <h6 class="d-flex align-items-center mb-3">
+                                <span class="badge bg-secondary rounded-circle me-2">2</span>
+                                Or Enter Code Manually
+                            </h6>
+                            <p class="text-muted small mb-2">
+                                If you can't scan the QR code, enter this key manually:
+                            </p>
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control font-monospace"
+                                       value="@setupData.ManualEntryKey" readonly />
+                                <button class="btn btn-outline-secondary" type="button"
+                                        @onclick="CopySecretKey" title="Copy to clipboard">
+                                    <i class="bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Verify -->
+                        <div class="step-section">
+                            <h6 class="d-flex align-items-center mb-3">
+                                <span class="badge bg-primary rounded-circle me-2">3</span>
+                                Enter Verification Code
+                            </h6>
+                            <p class="text-muted small mb-3">
+                                Enter the 6-digit code from your authenticator app to complete setup:
+                            </p>
+                            <div class="d-flex gap-2 mb-3 justify-content-center">
+                                <input @ref="box1" type="text" inputmode="numeric" maxlength="1"
+                                       class="form-control text-center digit-input"
+                                       style="width: 50px; height: 50px; font-size: 1.5rem;"
+                                       value="@digit1"
+                                       @oninput="(e) => OnDigitInput(e, 1)"
+                                       @onkeydown="(e) => OnKeyDown(e, 1)" />
+                                <input @ref="box2" type="text" inputmode="numeric" maxlength="1"
+                                       class="form-control text-center digit-input"
+                                       style="width: 50px; height: 50px; font-size: 1.5rem;"
+                                       value="@digit2"
+                                       @oninput="(e) => OnDigitInput(e, 2)"
+                                       @onkeydown="(e) => OnKeyDown(e, 2)" />
+                                <input @ref="box3" type="text" inputmode="numeric" maxlength="1"
+                                       class="form-control text-center digit-input"
+                                       style="width: 50px; height: 50px; font-size: 1.5rem;"
+                                       value="@digit3"
+                                       @oninput="(e) => OnDigitInput(e, 3)"
+                                       @onkeydown="(e) => OnKeyDown(e, 3)" />
+                                <input @ref="box4" type="text" inputmode="numeric" maxlength="1"
+                                       class="form-control text-center digit-input"
+                                       style="width: 50px; height: 50px; font-size: 1.5rem;"
+                                       value="@digit4"
+                                       @oninput="(e) => OnDigitInput(e, 4)"
+                                       @onkeydown="(e) => OnKeyDown(e, 4)" />
+                                <input @ref="box5" type="text" inputmode="numeric" maxlength="1"
+                                       class="form-control text-center digit-input"
+                                       style="width: 50px; height: 50px; font-size: 1.5rem;"
+                                       value="@digit5"
+                                       @oninput="(e) => OnDigitInput(e, 5)"
+                                       @onkeydown="(e) => OnKeyDown(e, 5)" />
+                                <input @ref="box6" type="text" inputmode="numeric" maxlength="1"
+                                       class="form-control text-center digit-input"
+                                       style="width: 50px; height: 50px; font-size: 1.5rem;"
+                                       value="@digit6"
+                                       @oninput="(e) => OnDigitInput(e, 6)"
+                                       @onkeydown="(e) => OnKeyDown(e, 6)" />
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary flex-grow-1" type="button"
+                                        @onclick="VerifyAndEnable" disabled="@isBusy">
+                                    @if (isBusy)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    }
+                                    <i class="bi-check-lg me-2"></i>
+                                    Verify & Enable
+                                </button>
+                                <button class="btn btn-outline-secondary" type="button" @onclick="CancelSetup">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .step-section {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .qr-code-container {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .font-monospace {
+        font-family: 'Courier New', Courier, monospace;
+        letter-spacing: 2px;
+    }
+
+    .digit-input {
+        caret-color: transparent;
+    }
+
+        .digit-input:focus {
+            border-color: #7367f0;
+            box-shadow: 0 0 0 0.2rem rgba(115, 103, 240, 0.25);
+        }
+</style>
+
+@code {
+    private bool isLoading = true;
+    private bool isBusy;
+    private bool isEnabled;
+    private AuthenticatorSetupDto? setupData;
+    private string? qrCodeDataUrl;
+
+    private string digit1 = "";
+    private string digit2 = "";
+    private string digit3 = "";
+    private string digit4 = "";
+    private string digit5 = "";
+    private string digit6 = "";
+
+    private ElementReference box1, box2, box3, box4, box5, box6;
+
+    private class VerificationModel
+    {
+        public string Code { get; set; } = string.Empty;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckAuthenticatorStatus();
+    }
+
+    private async Task CheckAuthenticatorStatus()
+    {
+        try
+        {
+            var token = await AuthProvider.GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                Nav.NavigateTo("/login");
+                return;
+            }
+
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await Http.GetAsync("/auth/authenticator/status");
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<AuthenticatorStatusDto>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true && result.Data is not null)
+            {
+                isEnabled = result.Data.IsEnabled;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking authenticator status: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task StartSetup()
+    {
+        isBusy = true;
+
+        try
+        {
+            var token = await AuthProvider.GetTokenAsync();
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await Http.PostAsync("/auth/authenticator/setup", null);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<AuthenticatorSetupDto>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true && result.Data is not null)
+            {
+                setupData = result.Data;
+
+                // Generate QR code URL using Google Charts API (free, no library needed)
+                var encodedUri = HttpUtility.UrlEncode(setupData.QrCodeUri);
+                qrCodeDataUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={encodedUri}";
+
+                StateHasChanged();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("showToast", "error", result?.Message ?? "Failed to start setup.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}");
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task CopySecretKey()
+    {
+        if (setupData is null) return;
+
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", setupData.ManualEntryKey.Replace(" ", ""));
+            await JS.InvokeVoidAsync("showToast", "success", "Secret key copied to clipboard!");
+        }
+        catch
+        {
+            await JS.InvokeVoidAsync("showToast", "error", "Failed to copy to clipboard.");
+        }
+    }
+
+    private async Task VerifyAndEnable()
+    {
+        var code = $"{digit1}{digit2}{digit3}{digit4}{digit5}{digit6}";
+
+        if (code.Length != 6)
+        {
+            await JS.InvokeVoidAsync("showToast", "error", "Please enter all 6 digits.");
+            return;
+        }
+
+        isBusy = true;
+
+        try
+        {
+            var token = await AuthProvider.GetTokenAsync();
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await Http.PostAsJsonAsync("/auth/authenticator/enable", new { Code = code });
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                await JS.InvokeVoidAsync("showToast", "success", "Authenticator app enabled successfully!");
+                isEnabled = true;
+                setupData = null;
+                qrCodeDataUrl = null;
+            }
+            else
+            {
+                var errorMessage = result?.Errors?.FirstOrDefault() ?? result?.Message ?? "Verification failed. Please try again.";
+                await JS.InvokeVoidAsync("showToast", "error", errorMessage);
+                ClearDigits();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}");
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task DisableAuthenticator()
+    {
+        isBusy = true;
+
+        try
+        {
+            var token = await AuthProvider.GetTokenAsync();
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await Http.PostAsync("/auth/authenticator/disable", null);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+
+            if (response.IsSuccessStatusCode && result?.Success == true)
+            {
+                await JS.InvokeVoidAsync("showToast", "success", "Authenticator app disabled.");
+                isEnabled = false;
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("showToast", "error", result?.Message ?? "Failed to disable authenticator.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("showToast", "error", $"Error: {ex.Message}");
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private void CancelSetup()
+    {
+        setupData = null;
+        qrCodeDataUrl = null;
+        ClearDigits();
+    }
+
+    private void ClearDigits()
+    {
+        digit1 = digit2 = digit3 = digit4 = digit5 = digit6 = "";
+        StateHasChanged();
+    }
+
+    private async Task OnDigitInput(ChangeEventArgs e, int index)
+    {
+        var value = e.Value?.ToString() ?? "";
+
+        // Only take first character if multiple entered
+        if (value.Length > 1)
+        {
+            value = value.Substring(0, 1);
+        }
+
+        // Only allow digits
+        if (!string.IsNullOrEmpty(value) && !char.IsDigit(value[0]))
+        {
+            value = "";
+        }
+
+        // Update the appropriate digit
+        switch (index)
+        {
+            case 1: digit1 = value; break;
+            case 2: digit2 = value; break;
+            case 3: digit3 = value; break;
+            case 4: digit4 = value; break;
+            case 5: digit5 = value; break;
+            case 6: digit6 = value; break;
+        }
+
+        StateHasChanged();
+
+        // Move to next box if a digit was entered
+        if (!string.IsNullOrEmpty(value))
+        {
+            await FocusNextBox(index);
+        }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e, int index)
+    {
+        if (e.Key == "Backspace")
+        {
+            // Get current value
+            var currentValue = index switch
+            {
+                1 => digit1,
+                2 => digit2,
+                3 => digit3,
+                4 => digit4,
+                5 => digit5,
+                6 => digit6,
+                _ => ""
+            };
+
+            // If current box is empty, move to previous and clear it
+            if (string.IsNullOrEmpty(currentValue) && index > 1)
+            {
+                // Clear previous box
+                switch (index - 1)
+                {
+                    case 1: digit1 = ""; break;
+                    case 2: digit2 = ""; break;
+                    case 3: digit3 = ""; break;
+                    case 4: digit4 = ""; break;
+                    case 5: digit5 = ""; break;
+                }
+                StateHasChanged();
+                await FocusPreviousBox(index);
+            }
+        }
+        else if (e.Key == "ArrowLeft" && index > 1)
+        {
+            await FocusPreviousBox(index);
+        }
+        else if (e.Key == "ArrowRight" && index < 6)
+        {
+            await FocusNextBox(index);
+        }
+    }
+
+    private async Task FocusNextBox(int currentIndex)
+    {
+        ElementReference? nextBox = currentIndex switch
+        {
+            1 => box2,
+            2 => box3,
+            3 => box4,
+            4 => box5,
+            5 => box6,
+            _ => null
+        };
+
+        if (nextBox.HasValue)
+        {
+            await nextBox.Value.FocusAsync();
+        }
+    }
+
+    private async Task FocusPreviousBox(int currentIndex)
+    {
+        ElementReference? prevBox = currentIndex switch
+        {
+            2 => box1,
+            3 => box2,
+            4 => box3,
+            5 => box4,
+            6 => box5,
+            _ => null
+        };
+
+        if (prevBox.HasValue)
+        {
+            await prevBox.Value.FocusAsync();
+        }
+    }
+}

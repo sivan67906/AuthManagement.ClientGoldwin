@@ -29,11 +29,9 @@
                     </a>
                 </div>
                 <!-- /Logo -->
-                <h4 class="mb-1">Verify your email ✉️</h4>
+                <h4 class="mb-1">Send Confirmation Email ✉️</h4>
                 <p class="mb-6">
-                    Account activation link sent to your email address: 
-                    <span class="fw-medium">@(model.Email ?? "hello@example.com")</span>
-                    Please follow the link inside to continue.
+                    Please click the below button to send account activation link.
                 </p>
 
                 <EditForm Model="model" OnValidSubmit="HandleResendEmail" class="mb-4">
@@ -74,15 +72,21 @@
     private bool isLoading;
     private bool success;
 
+    [Inject] NavigationManager Navigation { get; set; } = default!;
+
     private class EmailModel
     {
         public string Email { get; set; } = string.Empty;
+        public string CallbackBaseUrl { get; set; } = string.Empty;
     }
 
     protected override void OnInitialized()
     {
         var uri = Nav.ToAbsoluteUri(Nav.Uri);
         var query = uri.Query;
+        var baseUri = Navigation.BaseUri.TrimEnd('/');
+        
+        model.CallbackBaseUrl = $"{baseUri}/confirm-email";
 
         if (!string.IsNullOrEmpty(query) && query.StartsWith("?"))
         {
@@ -138,7 +142,7 @@
 
         try
         {
-            var response = await Http.PostAsJsonAsync("/auth/resend-confirmation-email", model);
+            var response = await Http.PostAsJsonAsync("/auth/send-confirmation-email", model);
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
 
             if (response.IsSuccessStatusCode && result?.Success == true)
@@ -146,12 +150,26 @@
                 success = true;
                 message = "Confirmation email sent successfully! Please check your inbox.";
                 await JS.InvokeVoidAsync("showToast", "success", message);
-
+                await Task.Delay(2000);
+                Nav.NavigateTo("/login");
             }
             else
             {
                 success = false;
-                message = result?.Message ?? "Failed to send confirmation email. Please try again.";
+                if (result?.Errors != null && result.Errors.Count > 0)
+                {
+                    // Loop through all errors and combine them
+                    var errorMessages = new List<string>();
+                    foreach (var error in result.Errors)
+                    {
+                        errorMessages.Add(error);
+                    }
+                    message = string.Join(", ", errorMessages);
+                }
+                else
+                {
+                    message = result?.Message ?? "Failed to send confirmation email. Please try again.";
+                }
                 await JS.InvokeVoidAsync("showToast", "error", message);
 
             }

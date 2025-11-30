@@ -8,10 +8,20 @@
 <AuthorizeView>
     <Authorized>
         <li class="nav-item navbar-dropdown dropdown-user dropdown">
-            <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
+            <a class="nav-link dropdown-toggle hide-arrow p-0 d-flex align-items-center gap-2" href="javascript:void(0);" data-bs-toggle="dropdown">
                 <div class="avatar avatar-online">
                     <div class="avatar-initial rounded-circle bg-label-primary">@AvatarInitials</div>
                 </div>
+
+                <div style="display: flex;align-items: flex-start;flex-direction: column;">
+                    <h2 style="font-size: 15px;margin-bottom: 0;line-height: 1;">
+                        @DisplayName
+                    </h2>
+                    <h6 class="ProfileRole" style="margin-bottom: 0;font-weight: 400;font-size: 14px;">
+                        Admin
+                    </h6>
+                </div>
+
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li>

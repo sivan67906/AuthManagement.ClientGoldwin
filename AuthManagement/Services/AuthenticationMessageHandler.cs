@@ -4,16 +4,13 @@ using Microsoft.AspNetCore.Components.Authorization;
 namespace AuthManagement.Services;
 
 /// <summary>
-/// HTTP message handler that automatically attaches JWT bearer token to outgoing requests
-/// Optimized for performance with cached token access
+/// HTTP message handler that automatically attaches JWT bearer token to outgoing requests.
+/// Fetches token from JwtAuthenticationStateProvider which persists to localStorage.
 /// </summary>
 public class AuthenticationMessageHandler : DelegatingHandler
 {
     private readonly AuthenticationStateProvider _authenticationStateProvider;
     private readonly ILogger<AuthenticationMessageHandler> _logger;
-    private string? _cachedToken;
-    private DateTime _tokenCacheTime = DateTime.MinValue;
-    private readonly TimeSpan _tokenCacheDuration = TimeSpan.FromSeconds(30);
 
     public AuthenticationMessageHandler(
         AuthenticationStateProvider authenticationStateProvider,
@@ -29,55 +26,37 @@ public class AuthenticationMessageHandler : DelegatingHandler
     {
         try
         {
-            // Get token with caching to avoid repeated provider calls
-            var token = await GetTokenWithCacheAsync();
-
-            if (!string.IsNullOrWhiteSpace(token))
+            // Get token from the auth provider (which loads from localStorage if needed)
+            if (_authenticationStateProvider is JwtAuthenticationStateProvider jwtProvider)
             {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var token = await jwtProvider.GetTokenAsync();
+
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    _logger.LogDebug("Added Bearer token to request: {Path}", request.RequestUri?.PathAndQuery);
+                }
+                else
+                {
+                    _logger.LogDebug("No token available for request: {Path}", request.RequestUri?.PathAndQuery);
+                }
             }
 
-            return await base.SendAsync(request, cancellationToken);
+            var response = await base.SendAsync(request, cancellationToken);
+
+            // Log 401 errors for debugging
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _logger.LogWarning("401 Unauthorized for request: {Path}", request.RequestUri?.PathAndQuery);
+            }
+
+            return response;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in authentication message handler");
+            _logger.LogError(ex, "Error in authentication message handler for {Path}",
+                request.RequestUri?.PathAndQuery);
             throw;
         }
-    }
-
-    private async Task<string?> GetTokenWithCacheAsync()
-    {
-        // Use cached token if still valid
-        if (_cachedToken != null && 
-            DateTime.UtcNow - _tokenCacheTime < _tokenCacheDuration)
-        {
-            return _cachedToken;
-        }
-
-        // Fetch fresh token
-        if (_authenticationStateProvider is JwtAuthenticationStateProvider jwtProvider)
-        {
-            var token = await jwtProvider.GetTokenAsync();
-            
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                _cachedToken = token;
-                _tokenCacheTime = DateTime.UtcNow;
-            }
-            
-            return token;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Clears the cached token, forcing a fresh fetch on next request
-    /// </summary>
-    public void ClearTokenCache()
-    {
-        _cachedToken = null;
-        _tokenCacheTime = DateTime.MinValue;
     }
 }

@@ -42,7 +42,7 @@ builder.Services.AddScoped<BootstrapDialogService>();
 builder.Services.AddScoped<SweetAlertService>();
 
 // ✅ CRITICAL FIX: Register AuthenticationMessageHandler as Transient
-builder.Services.AddTransient<AuthenticationMessageHandler>();
+builder.Services.AddScoped<AuthenticationMessageHandler>();
 
 // ✅ CORRECT: Use AddHttpClient with message handler for proper DelegatingHandler chain
 builder.Services.AddHttpClient("AuthAPI", client =>

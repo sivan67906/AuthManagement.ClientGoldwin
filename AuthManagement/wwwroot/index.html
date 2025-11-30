@@ -160,6 +160,9 @@
     <!-- MudBlazor JS -->
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
 
+
+   
+
     <script>
         // Helper function to load scripts dynamically
         window.loadScriptAndTrigger = function (src, trigger) {
@@ -351,10 +354,10 @@
             toast.className = `custom-toast custom-toast-${type}`;
 
             const icons = {
-                success: '<i class="ti ti-circle-check"></i>',
-                error: '<i class="ti ti-circle-x"></i>',
-                warning: '<i class="ti ti-alert-circle"></i>',
-                info: '<i class="ti ti-info-circle"></i>'
+                success: '<i class="ti tabler-circle-check"></i>',
+                error: '<i class="ti tabler-circle-x"></i>',
+                warning: '<i class="ti tabler-alert-circle"></i>',
+                info: '<i class="ti tabler-info-circle"></i>'
             };
 
             const titles = {
@@ -365,15 +368,15 @@
             };
 
             toast.innerHTML = `
-                                <div class="custom-toast-icon">${icons[type] || icons.info}</div>
-                                <div class="custom-toast-content">
-                                    <div class="custom-toast-title">${titles[type] || titles.info}</div>
-                                    <div class="custom-toast-message">${message}</div>
-                                </div>
-                                <button class="custom-toast-close" onclick="this.parentElement.remove()">
-                                    <i class="ti ti-x"></i>
-                                </button>
-                            `;
+                                    <div class="custom-toast-icon">${icons[type] || icons.info}</div>
+                                    <div class="custom-toast-content">
+                                        <div class="custom-toast-title">${titles[type] || titles.info}</div>
+                                        <div class="custom-toast-message">${message}</div>
+                                    </div>
+                                    <button class="custom-toast-close" onclick="this.parentElement.remove()">
+                                        <i class="ti tabler-x"></i>
+                                    </button>
+                                `;
 
             toastContainer.appendChild(toast);
 
